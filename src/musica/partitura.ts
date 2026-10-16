@@ -18,7 +18,9 @@ export interface OpcionesPartitura {
   pulsoActivo?: number | null | undefined;
   /** Pulso del ritmo en curso durante la reproducción: muestra la duración (cápsula / aro). */
   progreso?: number | null | undefined;
-  colores: { tinta: string; secundario: string; ok: string; curso: string; fallo: string; vacio: string };
+  /** Pulso marcado (Encuentra el error): rectángulo redondeado detrás. */
+  seleccionado?: number | null | undefined;
+  colores: { tinta: string; secundario: string; ok: string; curso: string; seleccion: string; fallo: string; vacio: string };
 }
 
 const DUR_SIMPLE: Record<number, string> = { 16: "w", 12: "hd", 8: "h", 4: "q", 2: "8", 1: "16" };
@@ -96,22 +98,25 @@ function agrupar(partes: string[], n: number, tam: number): string[] {
 /** Ajusta una sílaba al ancho de su pulso: baja hasta 11 px y, si no cabe, la parte por guiones en 2 o 3 líneas. */
 export function ajustarSilaba(texto: string, ancho: number): { tam: number; lineas: string[] } {
   const cabe = (ls: string[], tam: number) => ls.every((l) => medir(l, tam) <= ancho);
-  for (let tam = 14; tam >= 11; tam--) if (cabe([texto], tam)) return { tam, lineas: [texto] };
+  for (let tam = 14; tam >= 9; tam--) if (cabe([texto], tam)) return { tam, lineas: [texto] };
   const partes = texto.split(/[-\s]+/).filter(Boolean);
   for (let n = 2; n <= Math.min(3, partes.length); n++) {
-    for (let tam = 14; tam >= 11; tam--) {
+    for (let tam = 14; tam >= 9; tam--) {
       const ls = agrupar(partes, n, tam);
       if (cabe(ls, tam)) return { tam, lineas: ls };
     }
   }
   // Último recurso: una parte por línea y letra reducida hasta que quepa.
-  const ls = partes.length > 1 ? agrupar(partes, Math.min(3, partes.length), 11) : [texto];
-  let tam = 11;
+  const ls = partes.length > 1 ? agrupar(partes, Math.min(3, partes.length), 9) : [texto];
+  let tam = 9;
   while (tam > 7 && !cabe(ls, tam)) tam--;
   return { tam, lineas: ls };
 }
 
-export function dibujarPartitura(div: HTMLDivElement, o: OpcionesPartitura) {
+export interface ZonaPulso { pulso: number; x: number; y: number; w: number; h: number }
+
+export function dibujarPartitura(div: HTMLDivElement, o: OpcionesPartitura): ZonaPulso[] {
+  const zonas: ZonaPulso[] = [];
   const { compas: c } = o;
   const cabecera = 70;
   const filas = !!o.filas && o.numCompases > 1;
@@ -237,9 +242,26 @@ export function dibujarPartitura(div: HTMLDivElement, o: OpcionesPartitura) {
       }
     });
 
+    inicios.forEach((ini, k) => {
+      const x0 = ini.nota.getAbsoluteX() + 6;
+      const x1 = k + 1 < inicios.length ? inicios[k + 1]!.nota.getAbsoluteX() + 6 : finX;
+      const paso = (x1 - x0) / ini.pulsos;
+      for (let i = 0; i < ini.pulsos; i++) {
+        zonas.push({ pulso: pulsoGlobal + ini.pulso0 + i, x: x0 - 10 + paso * i, y: y0 + 4, w: paso, h: yPunto - y0 + 12 });
+      }
+    });
+
     pulsoGlobal += c.pulsos;
     x += ancho;
   }
+  const sel = zonas.find((z) => z.pulso === o.seleccionado);
+  const svg = div.querySelector("svg");
+  if (sel && svg) {
+    const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    Object.entries({ x: sel.x + 2, y: sel.y, width: sel.w - 4, height: sel.h, rx: 10, fill: o.colores.seleccion }).forEach(([k, v]) => rect.setAttribute(k, String(v)));
+    svg.insertBefore(rect, svg.firstChild);
+  }
+  return zonas;
 }
 
 /** Mini partitura de una figura para los botones de la paleta. */
