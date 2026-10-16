@@ -65,8 +65,10 @@
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.5.0",
     "tailwindcss": "^4.2.1",
+    "tone": "^15.1.22",
     "tw-animate-css": "^1.3.4",
     "vaul": "^1.1.2",
+    "vexflow": "~4.2.0",
     "vite-tsconfig-paths": "^6.0.2",
     "zod": "^3.25.76"
   },
