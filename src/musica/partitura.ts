@@ -166,7 +166,11 @@ export function dibujarPartitura(div: HTMLDivElement, o: OpcionesPartitura) {
     const anchoNotas = stave.getNoteEndX() - stave.getNoteStartX() - 10;
     new Formatter().joinVoices([voice]).format([voice], anchoNotas);
     voice.draw(ctx, stave);
-    beams.forEach((b) => b.setContext(ctx).draw());
+    beams.forEach((b) => {
+      const st = b.getNotes()[0]?.getStyle();
+      if (st) b.setStyle(st);
+      b.setContext(ctx).draw();
+    });
 
     const finX = stave.getNoteEndX() - 4;
     const yPunto = 108 + y0;
@@ -192,7 +196,7 @@ export function dibujarPartitura(div: HTMLDivElement, o: OpcionesPartitura) {
       }
       if (o.silabas && ini.silaba) {
         const texto = ini.silaba === "(silencio)" ? "—" : ini.silaba;
-        const { tam, lineas } = ajustarSilaba(texto, Math.max(20, x1 - x0 - 6));
+        const { tam, lineas } = ajustarSilaba(texto, Math.max(16, x1 - x0 - 8));
         ctx.save();
         ctx.setFillStyle(o.colores.secundario);
         ctx.setFont("Inter", tam, 600);
