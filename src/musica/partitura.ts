@@ -70,7 +70,7 @@ export function dibujarPartitura(div: HTMLDivElement, o: OpcionesPartitura) {
     const stave = new Stave(x, 10, ancho);
     soloLineaCentral(stave);
     if (m === 0) stave.addClef("percussion").addTimeSignature(`${c.num}/${c.den}`);
-    if (m === o.numCompases - 1) stave.setEndBarType(3);
+    if (m === o.numCompases - 1) stave.setEndBarType(BarlineType.END);
     stave.setContext(ctx).draw();
 
     const ids = compases[m] ?? [];
