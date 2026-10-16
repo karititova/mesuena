@@ -33,7 +33,13 @@ function notasDeFigura(id: string, c: Compas, color?: string): StaveNote[] {
       clef: "percussion",
     });
     if (dur.endsWith("d")) Dot.buildAndAttach([nota], { all: true });
-    if (color) nota.setStyle({ fillStyle: color, strokeStyle: color });
+    if (color) {
+      const st = { fillStyle: color, strokeStyle: color };
+      nota.setStyle(st);
+      nota.setStemStyle(st);
+      nota.setFlagStyle(st);
+      nota.getModifiers().forEach((m) => m.setStyle(st));
+    }
     return nota;
   });
 }
@@ -65,23 +71,42 @@ function medir(t: string, tam: number): number {
   return lienzo.measureText(t).width + 2;
 }
 
-/** Ajusta una sílaba al ancho disponible: baja hasta 11 px y, si no cabe, la parte en dos líneas. */
+/** Agrupa las partes (separadas por guion) en n líneas lo más equilibradas posible. */
+function agrupar(partes: string[], n: number, tam: number): string[] {
+  if (n >= partes.length) return partes.map((p, i) => (i < partes.length - 1 ? p + "-" : p));
+  let mejor: string[] = [];
+  let mejorAncho = Infinity;
+  const rec = (inicio: number, resto: number, acc: string[]) => {
+    if (resto === 1) {
+      const lineas = [...acc, partes.slice(inicio).join("-")];
+      const a = Math.max(...lineas.map((l) => medir(l, tam)));
+      if (a < mejorAncho) { mejorAncho = a; mejor = lineas; }
+      return;
+    }
+    for (let fin = inicio + 1; fin <= partes.length - resto + 1 - 1 + 1 && fin < partes.length; fin++) {
+      rec(fin, resto - 1, [...acc, partes.slice(inicio, fin).join("-") + "-"]);
+    }
+  };
+  rec(0, n, []);
+  return mejor;
+}
+
+/** Ajusta una sílaba al ancho de su pulso: baja hasta 11 px y, si no cabe, la parte por guiones en 2 o 3 líneas. */
 export function ajustarSilaba(texto: string, ancho: number): { tam: number; lineas: string[] } {
-  const cabeEn = (t: string, tam: number) => medir(t, tam) <= ancho;
-  for (let tam = 14; tam >= 11; tam--) if (cabeEn(texto, tam)) return { tam, lineas: [texto] };
-  const seps = [...texto].map((ch, i) => (ch === "-" || ch === " " ? i : -1)).filter((i) => i > 0);
-  if (seps.length) {
-    const mitad = texto.length / 2;
-    const corte = seps.reduce((a, b) => (Math.abs(b - mitad) < Math.abs(a - mitad) ? b : a));
-    const l1 = texto.slice(0, corte + (texto[corte] === "-" ? 1 : 0)).trim();
-    const l2 = texto.slice(corte + 1).trim();
-    const largo = Math.max(l1.length, l2.length);
-    let tam = 14;
-    while (tam > 11 && Math.max(medir(l1, tam), medir(l2, tam)) > ancho) tam--;
-    void largo;
-    return { tam, lineas: [l1, l2] };
+  const cabe = (ls: string[], tam: number) => ls.every((l) => medir(l, tam) <= ancho);
+  for (let tam = 14; tam >= 11; tam--) if (cabe([texto], tam)) return { tam, lineas: [texto] };
+  const partes = texto.split(/[-\s]+/).filter(Boolean);
+  for (let n = 2; n <= Math.min(3, partes.length); n++) {
+    for (let tam = 14; tam >= 11; tam--) {
+      const ls = agrupar(partes, n, tam);
+      if (cabe(ls, tam)) return { tam, lineas: ls };
+    }
   }
-  return { tam: 11, lineas: [texto] };
+  // Último recurso: una parte por línea y letra reducida hasta que quepa.
+  const ls = partes.length > 1 ? agrupar(partes, Math.min(3, partes.length), 11) : [texto];
+  let tam = 11;
+  while (tam > 7 && !cabe(ls, tam)) tam--;
+  return { tam, lineas: ls };
 }
 
 export function dibujarPartitura(div: HTMLDivElement, o: OpcionesPartitura) {
@@ -91,7 +116,7 @@ export function dibujarPartitura(div: HTMLDivElement, o: OpcionesPartitura) {
   const anchoPulso = filas ? 75 : o.numCompases > 1 ? 66 : 80;
   const anchoCompas = c.pulsos * anchoPulso;
   const W = filas ? cabecera + anchoCompas + 12 : cabecera + anchoCompas * o.numCompases + 12;
-  const altoFila = o.silabas ? 160 : 128;
+  const altoFila = o.silabas ? 172 : 128;
   const H = filas ? altoFila * o.numCompases : altoFila;
   const ctx = crearSvg(div, W, H);
   ctx.setFont("Inter", 12);
@@ -141,7 +166,11 @@ export function dibujarPartitura(div: HTMLDivElement, o: OpcionesPartitura) {
     const anchoNotas = stave.getNoteEndX() - stave.getNoteStartX() - 10;
     new Formatter().joinVoices([voice]).format([voice], anchoNotas);
     voice.draw(ctx, stave);
-    beams.forEach((b) => b.setContext(ctx).draw());
+    beams.forEach((b) => {
+      const st = b.getNotes()[0]?.getStyle();
+      if (st) b.setStyle(st);
+      b.setContext(ctx).draw();
+    });
 
     const finX = stave.getNoteEndX() - 4;
     const yPunto = 108 + y0;
@@ -167,7 +196,7 @@ export function dibujarPartitura(div: HTMLDivElement, o: OpcionesPartitura) {
       }
       if (o.silabas && ini.silaba) {
         const texto = ini.silaba === "(silencio)" ? "—" : ini.silaba;
-        const { tam, lineas } = ajustarSilaba(texto, Math.max(20, x1 - x0 - 6));
+        const { tam, lineas } = ajustarSilaba(texto, Math.max(16, x1 - x0 - 8));
         ctx.save();
         ctx.setFillStyle(o.colores.secundario);
         ctx.setFont("Inter", tam, 600);
