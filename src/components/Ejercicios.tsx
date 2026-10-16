@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { Marcadores } from "@/components/Marcadores";
 import { Paleta } from "@/components/Paleta";
@@ -33,15 +33,16 @@ export function EjercicioVista(p: Props) {
   return <Dictado {...p} />;
 }
 
+/** Durante la entrada, el contador ocupa el sitio de los marcadores. */
+function ZonaPulsos({ c, pulso, children }: { c: Compas; pulso: number | null; children: ReactNode }) {
+  return pulso !== null && pulso < 0 ? <div className="flex h-12 items-center justify-center"><Contador c={c} pulso={pulso} /></div> : <>{children}</>;
+}
+
 function CualSuena({ ej, cfg, compas: c, correccion, onCorregir }: Props) {
   const r = useReproductor(c, cfg.ppm, cfg.numCompases);
   const [silabas, setSilabas] = useState(false);
   const [elegida, setElegida] = useState<number | null>(null);
-  const elegir = (i: number) => {
-    r.detener();
-    setElegida(i);
-    onCorregir(corregirCual(i, ej));
-  };
+  const revelado = correccion !== null;
   return (
     <section className="tarjeta space-y-4">
       <div className="flex items-center justify-between">
@@ -49,36 +50,75 @@ function CualSuena({ ej, cfg, compas: c, correccion, onCorregir }: Props) {
         <InterruptorSilabas valor={silabas} onChange={setSilabas} />
       </div>
       <Partitura compas={c} ids={ej.ritmo} numCompases={cfg.numCompases} silabas={silabas} estados={estadosDe(correccion)} etiqueta="Partitura" />
-      <Contador c={c} pulso={r.sonando ? r.pulso : null} />
-      <div className="grid grid-cols-3 gap-2">
+      <div className="min-h-10"><Contador c={c} pulso={r.sonando ? r.pulso : null} /></div>
+      <div className="space-y-2" role="radiogroup" aria-label="Opciones">
         {ej.opciones!.map((ids, i) => {
-          const revelado = correccion !== null;
           const esCorrecta = i === ej.correcta;
+          const marcada = elegida === i;
+          const elegir = () => !revelado && setElegida(i);
           return (
             <div
               key={i}
+              role="radio"
+              aria-checked={marcada}
+              tabIndex={revelado ? -1 : 0}
+              onClick={elegir}
+              onKeyDown={(e) => (e.key === " " || e.key === "Enter") && (e.preventDefault(), elegir())}
               className={cn(
-                "space-y-2 rounded-[16px] border-2 p-2",
-                revelado && esCorrecta ? "border-primary bg-verde-claro" : revelado && elegida === i ? "border-destructive bg-error-claro" : "border-marron-claro",
+                "flex min-h-16 cursor-pointer items-center gap-3 rounded-[16px] border-2 bg-card p-2 pr-4",
+                revelado && esCorrecta
+                  ? "border-acierto bg-verde-claro"
+                  : revelado && marcada
+                    ? "border-destructive bg-error-claro"
+                    : marcada
+                      ? "border-primary"
+                      : "border-marron-claro",
               )}
             >
               <button
                 type="button"
-                onClick={() => (r.sonando === `op${i}` ? r.detener() : r.tocar(`op${i}`, ids))}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (r.sonando === `op${i}`) r.detener();
+                  else r.tocar(`op${i}`, ids);
+                }}
                 disabled={r.sonando !== null && r.sonando !== `op${i}`}
-                className="boton boton-primario w-full font-sans text-2xl font-bold"
-                aria-label={`Escuchar el ${i + 1}`}
+                className="boton boton-secundario min-h-12 px-4"
+                aria-label={`Escuchar opción ${i + 1}`}
               >
-                {r.sonando === `op${i}` ? "■" : `▶ ${i + 1}`}
+                {r.sonando === `op${i}` ? "■" : "▶"}
               </button>
-              <button type="button" disabled={revelado} onClick={() => elegir(i)} className="boton boton-secundario w-full">
-                {revelado && esCorrecta ? "Era este" : "Este"}
-              </button>
+              <span className="flex-1 font-semibold">Opción {i + 1}</span>
+              {revelado && esCorrecta && <span className="text-sm text-muted-foreground">Era esta</span>}
+              <span
+                aria-hidden
+                className={cn(
+                  "flex size-6 items-center justify-center rounded-[6px] border-2 text-sm font-bold",
+                  marcada ? "border-primary bg-primary text-primary-foreground" : "border-marron-claro",
+                )}
+              >
+                {marcada && "✓"}
+              </span>
             </div>
           );
         })}
       </div>
-      <div className="flex justify-end">
+      <div className="grid grid-cols-[1fr_auto] gap-2">
+        {!revelado ? (
+          <button
+            type="button"
+            disabled={elegida === null}
+            onClick={() => {
+              r.detener();
+              onCorregir(corregirCual(elegida!, ej));
+            }}
+            className="boton boton-primario"
+          >
+            Comprobar
+          </button>
+        ) : (
+          <span />
+        )}
         <BotonPulso activo={r.conPulso} onChange={r.setConPulso} />
       </div>
     </section>
@@ -92,73 +132,73 @@ function Dictado({ ej, cfg, compas: c, correccion, onCorregir }: Props) {
   const puestos = respuesta.reduce((a, id) => a + figura(id).pulsos, 0);
   const bloqueado = correccion !== null;
   return (
-    <>
-      <section className="tarjeta space-y-4">
-        <div className="grid grid-cols-[1fr_auto] gap-2">
-          <button
-            type="button"
-            onClick={() => (r.sonando === "ritmo" ? r.detener() : r.tocar("ritmo", ej.ritmo))}
-            disabled={r.sonando === "resp"}
-            className="boton boton-primario text-lg"
-          >
-            {r.sonando === "ritmo" ? "■ Parar" : "▶ Escuchar"}
-          </button>
-          <BotonPulso activo={r.conPulso} onChange={r.setConPulso} />
-        </div>
-        <Contador c={c} pulso={r.sonando ? r.pulso : null} />
+    <section className="tarjeta divide-y divide-marron-claro p-3 [&>*]:py-2.5 [&>*:first-child]:pt-0 [&>*:last-child]:pb-0">
+      <ZonaPulsos c={c} pulso={r.sonando === "ritmo" ? r.pulso : null}>
         <Marcadores compas={c} ids={ej.ritmo} numCompases={cfg.numCompases} progreso={r.progreso("ritmo")} />
-      </section>
-
-      <section className="tarjeta space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="font-display text-[24px] leading-none font-semibold">Tu respuesta</h2>
-          <span className="font-sans text-lg font-bold tabular-nums text-muted-foreground">
+      </ZonaPulsos>
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => (r.sonando === "ritmo" ? r.detener() : r.tocar("ritmo", ej.ritmo))}
+          disabled={r.sonando === "resp"}
+          className="boton boton-primario min-h-11 flex-1"
+        >
+          {r.sonando === "ritmo" ? "■ Parar" : "▶ Escuchar"}
+        </button>
+        <BotonPulso activo={r.conPulso} onChange={r.setConPulso} />
+      </div>
+      <div className="space-y-1">
+        <div className="flex items-center justify-between text-sm">
+          <span className="font-semibold">Tu respuesta</span>
+          <span className="font-sans font-bold tabular-nums text-muted-foreground">
             {puestos}/{total}
           </span>
         </div>
+        {r.sonando === "resp" && r.pulso !== null && r.pulso < 0 && <Contador c={c} pulso={r.pulso} />}
         <Partitura
           compas={c}
           ids={respuesta}
           numCompases={cfg.numCompases}
           silabas={false}
+          compacta
           estados={estadosDe(correccion)}
           progreso={r.progreso("resp")}
           etiqueta="Partitura de tu respuesta"
         />
-        {!bloqueado && (
-          <>
-            <Paleta ids={cfg.figuras} compas={c} respuesta={respuesta} numCompases={cfg.numCompases} onAñadir={(id) => setRespuesta([...respuesta, id])} />
-            <div className="grid grid-cols-2 gap-3">
-              <button type="button" onClick={() => setRespuesta(respuesta.slice(0, -1))} disabled={!respuesta.length} className="boton boton-secundario">
-                Deshacer
-              </button>
-              <button type="button" onClick={() => setRespuesta([])} disabled={!respuesta.length} className="boton boton-secundario">
-                Borrar
-              </button>
-              <button
-                type="button"
-                onClick={() => (r.sonando === "resp" ? r.detener() : r.tocar("resp", respuesta))}
-                disabled={!respuesta.length || r.sonando === "ritmo"}
-                className="boton boton-secundario"
-              >
-                {r.sonando === "resp" ? "■ Parar" : "Oír mi respuesta"}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  r.detener();
-                  onCorregir(corregirDictado(respuesta, ej));
-                }}
-                disabled={puestos < total}
-                className="boton boton-primario"
-              >
-                Comprobar
-              </button>
-            </div>
-          </>
-        )}
-      </section>
-    </>
+      </div>
+      {!bloqueado && (
+        <>
+          <Paleta ids={cfg.figuras} compas={c} respuesta={respuesta} numCompases={cfg.numCompases} onAñadir={(id) => setRespuesta([...respuesta, id])} />
+          <div className="grid grid-cols-4 gap-1.5">
+            <button type="button" onClick={() => setRespuesta(respuesta.slice(0, -1))} disabled={!respuesta.length} className="boton boton-secundario min-h-11 px-1 text-sm">
+              Deshacer
+            </button>
+            <button type="button" onClick={() => setRespuesta([])} disabled={!respuesta.length} className="boton boton-secundario min-h-11 px-1 text-sm">
+              Borrar
+            </button>
+            <button
+              type="button"
+              onClick={() => (r.sonando === "resp" ? r.detener() : r.tocar("resp", respuesta))}
+              disabled={!respuesta.length || r.sonando === "ritmo"}
+              className="boton boton-secundario min-h-11 px-1 text-sm leading-tight"
+            >
+              {r.sonando === "resp" ? "■ Parar" : "Oír mi respuesta"}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                r.detener();
+                onCorregir(corregirDictado(respuesta, ej));
+              }}
+              disabled={puestos < total}
+              className="boton boton-primario min-h-11 px-1 text-sm"
+            >
+              Comprobar
+            </button>
+          </div>
+        </>
+      )}
+    </section>
   );
 }
 
@@ -175,18 +215,20 @@ function EncuentraError({ ej, cfg, compas: c, correccion, onCorregir }: Props) {
         <h2 className="font-display text-[24px] leading-none font-semibold">¿Dónde no coincide?</h2>
         <InterruptorSilabas valor={silabas} onChange={setSilabas} />
       </div>
-      <Partitura compas={c} ids={ej.ritmo} numCompases={cfg.numCompases} silabas={silabas} etiqueta="Partitura escrita" />
-      <Marcadores
+      <p className="text-sm text-muted-foreground">Toca en la partitura el pulso que suena distinto.</p>
+      <Partitura
         compas={c}
         ids={ej.ritmo}
         numCompases={cfg.numCompases}
+        silabas={silabas}
         estados={estados}
-        seleccionado={tocado}
-        onTocar={correccion ? undefined : setTocado}
+        seleccionado={correccion ? null : tocado}
+        onTocarPulso={correccion ? undefined : setTocado}
+        etiqueta="Partitura escrita"
       />
-      <Contador c={c} pulso={r.sonando ? r.pulso : null} />
-      <div className="grid grid-cols-[1fr_auto] gap-2">
-        <button type="button" onClick={() => (r.sonando ? r.detener() : r.tocar("suena", ej.suena!))} className="boton boton-secundario text-lg">
+      <div className="min-h-10"><Contador c={c} pulso={r.sonando ? r.pulso : null} /></div>
+      <div className="flex gap-2">
+        <button type="button" onClick={() => (r.sonando ? r.detener() : r.tocar("suena", ej.suena!))} className="boton boton-secundario flex-1 text-lg">
           {r.sonando ? "■ Parar" : "▶ Escuchar"}
         </button>
         <BotonPulso activo={r.conPulso} onChange={r.setConPulso} />
@@ -201,7 +243,7 @@ function EncuentraError({ ej, cfg, compas: c, correccion, onCorregir }: Props) {
           }}
           className="boton boton-primario w-full"
         >
-          {tocado === null ? "Toca el pulso que no coincide" : `Comprobar pulso ${tocado + 1}`}
+          Comprobar
         </button>
       )}
     </section>
