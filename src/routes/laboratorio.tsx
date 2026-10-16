@@ -152,11 +152,11 @@ function Laboratorio() {
           />
         )}
         <Entrada c={c} pulso={sonando ? pulso : null} />
-        <div className="grid grid-cols-[1fr_1fr_auto] gap-3">
-          <button type="button" onClick={() => tocar("ritmo")} disabled={sonando !== null} className="boton boton-primario">
+        <div className="grid grid-cols-[1fr_auto_auto] gap-2">
+          <button type="button" onClick={() => tocar("ritmo")} disabled={sonando !== null} className="boton boton-primario whitespace-nowrap px-3">
             ▶ Reproducir
           </button>
-          <button type="button" onClick={detener} className="boton boton-secundario">
+          <button type="button" onClick={detener} className="boton boton-secundario whitespace-nowrap px-4">
             ■ Parar
           </button>
           <button
