@@ -15,7 +15,7 @@ export interface OpcionesPartitura {
   /** Dibuja cada compás en su propia fila (móvil vertical). */
   filas?: boolean;
   /** Índice global del punto de pulso encendido (reproducción). */
-  pulsoActivo?: number | null;
+  pulsoActivo?: number | null | undefined;
   colores: { tinta: string; secundario: string; ok: string; fallo: string; vacio: string };
 }
 
