@@ -14,10 +14,10 @@ export function Marcadores(props: {
   compas: Compas;
   ids: string[];
   numCompases: number;
-  progreso?: number | null;
-  estados?: EstadoMarcador[];
-  onTocar?: (pulso: number) => void;
-  seleccionado?: number | null;
+  progreso?: number | null | undefined;
+  estados?: EstadoMarcador[] | undefined;
+  onTocar?: ((pulso: number) => void) | undefined;
+  seleccionado?: number | null | undefined;
 }) {
   const { compas: c, ids, numCompases, progreso, estados, onTocar, seleccionado } = props;
   const compases = repartirEnCompases(ids, c);

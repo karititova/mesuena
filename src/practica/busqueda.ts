@@ -12,7 +12,8 @@ export interface Busqueda {
   n?: number;
 }
 
-export function leerBusqueda(s: Record<string, unknown>): Busqueda {
+export function leerBusqueda(entrada: Record<string, unknown>): Busqueda {
+  const s = entrada as { nivel?: unknown; compas?: unknown; figuras?: unknown; ejercicio?: unknown; ppm?: unknown; n?: unknown };
   const out: Busqueda = {};
   const nivel = Number(s.nivel);
   if (nivel === 1 || nivel === 2) out.nivel = nivel;
