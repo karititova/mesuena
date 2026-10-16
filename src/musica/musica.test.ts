@@ -118,11 +118,11 @@ describe("sonido del ritmo", () => {
     expect(m.filter((e) => (e.pulso ?? 0) < 0).every((e) => e.vel > 0)).toBe(true);
     expect(m.filter((e) => (e.pulso ?? 0) >= 0).every((e) => e.vel === 0)).toBe(true);
   });
-  it("es percusión afinada que se apaga sola: La4, triángulo, envolvente dictada", () => {
-    expect(RITMO_VOZ.nota).toBe("A4"); // La4 = 440 Hz
+  it("es percusión afinada grave y cálida: Sol3, triángulo, envolvente dictada", () => {
+    expect(RITMO_VOZ.nota).toBe("G3"); // Sol3 = 196 Hz, suelo absoluto del timbre
     expect(RITMO_VOZ.oscilan).toBe("triangle");
-    expect(RITMO_VOZ.filtroHz).toBe(1800);
-    expect(RITMO_VOZ.envolvente).toEqual({ attack: 0.005, decay: 1.2, sustain: 0.15, release: 0.06 });
+    expect(RITMO_VOZ.filtroHz).toBe(900);
+    expect(RITMO_VOZ.envolvente).toEqual({ attack: 0.008, decay: 1.2, sustain: 0.15, release: 0.06 });
     expect(RITMO_VOZ.volumen).toBe(-8);
   });
 });

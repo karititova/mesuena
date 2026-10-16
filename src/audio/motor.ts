@@ -20,10 +20,10 @@ export const VEL_NOTA = Math.pow(10, -2.5 / 20);
  * Ataque redondo y corto, resonancia que se apaga sola (sustain bajo).
  */
 export const RITMO_VOZ = {
-  nota: "A4", // La4 = 440 Hz
+  nota: "G3", // Sol3 = 196 Hz. Nunca más grave: en el altavoz del móvil dejaría de oírse.
   oscilan: "triangle" as const,
-  filtroHz: 1800,
-  envolvente: { attack: 0.005, decay: 1.2, sustain: 0.15, release: 0.06 },
+  filtroHz: 900,
+  envolvente: { attack: 0.008, decay: 1.2, sustain: 0.15, release: 0.06 },
   volumen: -8,
 };
 
