@@ -21,7 +21,7 @@ export const Route = createFileRoute("/practicar/")({
 
 const NIVELES = [
   { nivel: 1 as const, nombre: "Pulso y división", frase: "El pulso se divide en dos o en tres.", baldo: "neutro" as const },
-  { nivel: 2 as const, nombre: "Rellenar el pulso", frase: "Un pulso se rellena de muchas formas.", baldo: "espera" as const },
+  { nivel: 2 as const, nombre: "Rellenar el pulso", frase: "Un pulso se rellena de muchas formas.", baldo: "neutro" as const },
 ];
 
 function Practicar() {

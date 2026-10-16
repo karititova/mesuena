@@ -18,7 +18,7 @@ export interface OpcionesPartitura {
   pulsoActivo?: number | null | undefined;
   /** Pulso del ritmo en curso durante la reproducción: muestra la duración (cápsula / aro). */
   progreso?: number | null | undefined;
-  colores: { tinta: string; secundario: string; ok: string; fallo: string; vacio: string };
+  colores: { tinta: string; secundario: string; ok: string; curso: string; fallo: string; vacio: string };
 }
 
 const DUR_SIMPLE: Record<number, string> = { 16: "w", 12: "hd", 8: "h", 4: "q", 2: "8", 1: "16" };
@@ -183,8 +183,8 @@ export function dibujarPartitura(div: HTMLDivElement, o: OpcionesPartitura) {
       const enCurso = o.progreso != null && ini.silaba !== "" && o.progreso >= idx0;
       if (enCurso) {
         ctx.save();
-        ctx.setFillStyle(o.colores.ok);
-        ctx.setStrokeStyle(o.colores.ok);
+        ctx.setFillStyle(o.colores.curso);
+        ctx.setStrokeStyle(o.colores.curso);
         if (ini.silaba === "(silencio)") {
           // Silencio: aro vacío.
           ctx.setLineWidth(2);

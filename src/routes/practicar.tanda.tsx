@@ -103,7 +103,7 @@ function TandaEn({ cfg }: { cfg: Config }) {
               key={i}
               className={cn(
                 "h-1.5 flex-1 rounded-full",
-                correcciones[i] ? (correcciones[i]!.acierto ? "bg-primary" : "bg-destructive") : i === indice ? "bg-foreground/40" : "bg-marron-claro",
+                correcciones[i] ? (correcciones[i]!.acierto ? "bg-acierto" : "bg-destructive") : i === indice ? "bg-acento" : "bg-marron-claro",
               )}
             />
           ))}
@@ -151,7 +151,7 @@ function Resumen({ cfg, correcciones, onRepetir, onOtra }: { cfg: Config; correc
           const ok = x.aciertos.filter(Boolean).length;
           return (
             <li key={i} className="flex items-center gap-3 rounded-[12px] bg-background px-3 py-2.5 text-sm">
-              <span className={cn("size-3 rounded-full", x.acierto ? "bg-primary" : "bg-destructive")} aria-label={x.acierto ? "Bien" : "Con fallos"} />
+              <span className={cn("size-3 rounded-full", x.acierto ? "bg-acierto" : "bg-destructive")} aria-label={x.acierto ? "Bien" : "Con fallos"} />
               <span className="font-semibold">Ejercicio {i + 1}</span>
               <span className="ml-auto tabular-nums text-muted-foreground">
                 {ok} de {x.aciertos.length} pulsos

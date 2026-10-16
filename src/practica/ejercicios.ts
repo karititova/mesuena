@@ -70,10 +70,10 @@ export function variarUnPulso(
   if (!posiciones.length) return null;
   const unPulso = figurasDisponibles(c.tipo, nivel).filter((f) => f.pulsos === 1);
   const preferidas = unPulso.filter((f) => permitidas.includes(f.id));
-  for (let intento = 0; intento < 40; intento++) {
+  for (let intento = 0; intento < 60; intento++) {
     const pos = posiciones[Math.floor(azar() * posiciones.length)]!;
     const actual = ids[pos.i]!;
-    const pool = (intento < 20 ? preferidas : unPulso).filter((f) => f.id !== actual);
+    const pool = preferidas.filter((f) => f.id !== actual);
     if (!pool.length) continue;
     const nueva = pool[Math.floor(azar() * pool.length)]!;
     const out = [...ids];

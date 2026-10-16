@@ -131,10 +131,10 @@ describe("sonido del ritmo", () => {
     expect(m.filter((e) => (e.pulso ?? 0) >= 0).every((e) => e.vel === 0)).toBe(true);
   });
   it("el ritmo suena siempre en la misma nota fija y sin deslizamiento", () => {
-    expect(RITMO_VOZ.nota).toBe("C5");
+    expect(RITMO_VOZ.nota).toBe("A5");
     expect(RITMO_VOZ.golpe).toBe(0.05);
-    expect(RITMO_VOZ.pitchDecay).toBe(0.01);
-    expect(RITMO_VOZ.octaves).toBe(1);
+    expect(RITMO_VOZ.pitchDecay).toBe(0.006);
+    expect(RITMO_VOZ.octaves).toBe(1.5);
   });
   it("la primera nota de cada pulso suena 2,5 dB más fuerte", () => {
     expect(20 * Math.log10(VEL_PULSO / VEL_NOTA)).toBeCloseTo(2.5, 5);

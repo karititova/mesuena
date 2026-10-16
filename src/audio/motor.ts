@@ -16,15 +16,15 @@ export const VEL_PULSO = 1;
 export const VEL_NOTA = Math.pow(10, -2.5 / 20);
 
 /**
- * Voz del ritmo: bloque de madera. Siempre la misma nota fija y la misma duración corta;
+ * Voz del ritmo: bloque de madera. Altura y timbre de la primera versión del laboratorio (La5); siempre la misma duración corta;
  * polifónico para que ningún ataque se solape con el anterior; sin deslizamiento de altura.
  * El acento de la primera nota de cada pulso es solo de volumen.
  */
 export const RITMO_VOZ = {
-  nota: "C5",
+  nota: "A5",
   golpe: 0.05,
-  pitchDecay: 0.01,
-  octaves: 1,
+  pitchDecay: 0.006,
+  octaves: 1.5,
   envolvente: { attack: 0.001, decay: 0.07, sustain: 0, release: 0.02 },
   volumen: -4,
 };

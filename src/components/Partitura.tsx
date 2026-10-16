@@ -5,7 +5,7 @@ import type { EstadoPulso } from "@/musica/partitura";
 function leerColores() {
   const cs = getComputedStyle(document.documentElement);
   const v = (n: string) => cs.getPropertyValue(n).trim();
-  return { tinta: v("--foreground"), secundario: v("--muted-foreground"), ok: v("--primary"), fallo: v("--destructive"), vacio: v("--marron-claro") };
+  return { tinta: v("--foreground"), secundario: v("--muted-foreground"), ok: v("--acierto"), curso: v("--primary"), fallo: v("--destructive"), vacio: v("--marron-claro") };
 }
 
 export function Partitura(props: {
