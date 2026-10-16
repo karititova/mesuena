@@ -90,7 +90,7 @@ describe("comprobar", () => {
   });
 });
 
-import { eventosDe } from "@/audio/motor";
+import { eventosDe, RITMO_VOZ } from "@/audio/motor";
 import { compas as cc } from "./compases";
 describe("compás de entrada", () => {
   it.each(["2/4", "6/8", "4/4", "12/8"])("siempre 1 compás en %s", (id) => {
@@ -117,5 +117,12 @@ describe("sonido del ritmo", () => {
     const m = eventosDe(cc("2/4"), ["blanca"], 60, 1, false).eventos.filter((e) => e.tipo === "metro");
     expect(m.filter((e) => (e.pulso ?? 0) < 0).every((e) => e.vel > 0)).toBe(true);
     expect(m.filter((e) => (e.pulso ?? 0) >= 0).every((e) => e.vel === 0)).toBe(true);
+  });
+  it("es percusión afinada que se apaga sola: La4, triángulo, envolvente dictada", () => {
+    expect(RITMO_VOZ.nota).toBe("A4"); // La4 = 440 Hz
+    expect(RITMO_VOZ.oscilan).toBe("triangle");
+    expect(RITMO_VOZ.filtroHz).toBe(1800);
+    expect(RITMO_VOZ.envolvente).toEqual({ attack: 0.005, decay: 1.2, sustain: 0.15, release: 0.06 });
+    expect(RITMO_VOZ.volumen).toBe(-8);
   });
 });
