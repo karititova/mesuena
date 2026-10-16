@@ -60,6 +60,10 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-verde-claro: var(--verde-claro);
+  --color-acierto: var(--acierto);
+  --color-primario-claro: var(--primario-claro);
+  --color-acento: var(--acento);
+  --color-acento-claro: var(--acento-claro);
   --color-marron: var(--marron);
   --color-marron-claro: var(--marron-claro);
   --color-error-claro: var(--error-claro);
@@ -75,9 +79,9 @@
   --card-foreground: oklch(0.232 0.006 78.2);
   --popover: oklch(0.994 0.007 88.6);
   --popover-foreground: oklch(0.232 0.006 78.2);
-  --primary: oklch(0.528 0.111 152.0);
+  --primary: oklch(0.446 0.068 211);
   --primary-foreground: oklch(0.994 0.007 88.6);
-  --secondary: oklch(0.932 0.028 150.4);
+  --secondary: oklch(0.928 0.016 203);
   --secondary-foreground: oklch(0.232 0.006 78.2);
   --muted: oklch(0.908 0.025 77.5);
   --muted-foreground: oklch(0.493 0.025 69.4);
@@ -87,25 +91,29 @@
   --destructive-foreground: oklch(0.994 0.007 88.6);
   --border: oklch(0.908 0.025 77.5);
   --input: oklch(0.908 0.025 77.5);
-  --ring: oklch(0.528 0.111 152.0);
+  --ring: oklch(0.446 0.068 211);
   --verde-claro: oklch(0.932 0.028 150.4);
+  --acierto: oklch(0.572 0.110 152);
+  --primario-claro: oklch(0.928 0.016 203);
+  --acento: oklch(0.772 0.135 75);
+  --acento-claro: oklch(0.930 0.050 86);
   --marron: oklch(0.475 0.072 60.1);
   --marron-claro: oklch(0.908 0.025 77.5);
   --error-claro: oklch(0.919 0.030 38.6);
   --shadow-tarjeta: 0 1px 2px oklch(0.232 0.006 78.2 / 0.06), 0 2px 8px oklch(0.232 0.006 78.2 / 0.04);
-  --chart-1: oklch(0.528 0.111 152.0);
+  --chart-1: oklch(0.446 0.068 211);
   --chart-2: oklch(0.475 0.072 60.1);
   --chart-3: oklch(0.593 0.152 33.4);
   --chart-4: oklch(0.908 0.025 77.5);
   --chart-5: oklch(0.932 0.028 150.4);
   --sidebar: oklch(0.994 0.007 88.6);
   --sidebar-foreground: oklch(0.232 0.006 78.2);
-  --sidebar-primary: oklch(0.528 0.111 152.0);
+  --sidebar-primary: oklch(0.446 0.068 211);
   --sidebar-primary-foreground: oklch(0.994 0.007 88.6);
   --sidebar-accent: oklch(0.908 0.025 77.5);
   --sidebar-accent-foreground: oklch(0.232 0.006 78.2);
   --sidebar-border: oklch(0.908 0.025 77.5);
-  --sidebar-ring: oklch(0.528 0.111 152.0);
+  --sidebar-ring: oklch(0.446 0.068 211);
 }
 
 @property --halo {
@@ -154,7 +162,7 @@
   min-height: 64px; padding: .5rem; border-radius: 12px;
   background: var(--color-card); border: 1px solid var(--color-marron-claro);
   transition: background-color .15s, transform .1s;
-  &:active:not(:disabled) { transform: scale(0.97); background: var(--color-verde-claro); }
+  &:active:not(:disabled) { transform: scale(0.97); background: var(--color-primario-claro); }
   &:disabled { opacity: .4; cursor: not-allowed; }
 }
 @utility pulso {
@@ -163,11 +171,11 @@
 @utility pulso-ok { background: var(--color-verde-claro); }
 @utility pulso-fallo { background: var(--color-error-claro); }
 
-.baldo { --halo: var(--marron-claro); transition: --halo 300ms ease; }
+.baldo { --halo: color-mix(in oklab, var(--acento-claro) 70%, transparent); transition: --halo 300ms ease; }
 .baldo[data-estado="acierto"] { --halo: var(--verde-claro); }
 .baldo[data-estado="fallo"] { --halo: var(--error-claro); }
-.baldo[data-estado="espera"] { --halo: oklch(0.908 0.025 77.5 / 0.55); }
-.baldo[data-estado="celebracion"] { --halo: oklch(0.88 0.06 150); }
+.baldo[data-estado="espera"] { --halo: color-mix(in oklab, var(--acento-claro) 50%, transparent); }
+.baldo[data-estado="celebracion"] { --halo: var(--acento-claro); }
 .baldo-halo {
   background: radial-gradient(circle, var(--halo) 0%, color-mix(in oklab, var(--halo) 60%, transparent) 40%, transparent 70%);
   filter: blur(6px);
@@ -178,16 +186,9 @@
   .partitura-caja svg { max-height: 150px; width: auto !important; max-width: 100%; margin-inline: auto; }
 }
 
-/* Cabecera de pantalla: halo muy difuminado que se funde con el crema. */
-.cabecera-halo {
-  background:
-    radial-gradient(40% 60% at 25% 50%, color-mix(in oklab, var(--verde-claro) 90%, transparent) 0%, transparent 70%),
-    radial-gradient(35% 55% at 70% 40%, color-mix(in oklab, var(--marron-claro) 90%, transparent) 0%, transparent 70%);
-  filter: blur(30px);
-}
 @utility pildora {
   display: inline-flex; align-items: center; min-height: 1.75rem; padding: 0 .75rem; border-radius: 999px;
-  background: var(--color-card); box-shadow: var(--shadow-tarjeta); font-size: .8125rem; font-weight: 600; color: var(--color-muted-foreground);
+  background: var(--color-acento-claro); font-size: .8125rem; font-weight: 600; color: var(--color-foreground);
 }
 @utility tarjeta-opcion {
   display: flex; align-items: center; gap: 1rem; width: 100%; text-align: left;
@@ -202,4 +203,10 @@
   transition: border-color .15s, opacity .15s;
   &[aria-pressed="false"] { opacity: .5; }
   &[aria-pressed="true"] { border-color: var(--color-primary); }
+}
+@utility boton-contorno {
+  display: inline-flex; align-items: center; justify-content: center; gap: .375rem;
+  min-height: 2.75rem; padding: 0 .75rem; border-radius: 12px; font-size: .875rem; font-weight: 600;
+  background: transparent; border: 1.5px solid var(--color-marron-claro); color: var(--color-muted-foreground);
+  &[aria-checked="true"] { color: var(--color-foreground); border-color: var(--color-muted-foreground); }
 }
