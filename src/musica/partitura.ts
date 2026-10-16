@@ -16,6 +16,8 @@ export interface OpcionesPartitura {
   filas?: boolean;
   /** Índice global del punto de pulso encendido (reproducción). */
   pulsoActivo?: number | null | undefined;
+  /** Pulso del ritmo en curso durante la reproducción: muestra la duración (cápsula / aro). */
+  progreso?: number | null | undefined;
   colores: { tinta: string; secundario: string; ok: string; fallo: string; vacio: string };
 }
 
@@ -177,7 +179,35 @@ export function dibujarPartitura(div: HTMLDivElement, o: OpcionesPartitura) {
     inicios.forEach((ini, k) => {
       const x0 = ini.nota.getAbsoluteX() + 6;
       const x1 = k + 1 < inicios.length ? inicios[k + 1]!.nota.getAbsoluteX() + 6 : finX;
-      for (let i = 0; i < ini.pulsos; i++) {
+      const idx0 = pulsoGlobal + ini.pulso0;
+      const enCurso = o.progreso != null && ini.silaba !== "" && o.progreso >= idx0;
+      if (enCurso) {
+        ctx.save();
+        ctx.setFillStyle(o.colores.ok);
+        ctx.setStrokeStyle(o.colores.ok);
+        if (ini.silaba === "(silencio)") {
+          // Silencio: aro vacío.
+          ctx.setLineWidth(2);
+          ctx.beginPath();
+          ctx.arc(x0, yPunto, 6, 0, Math.PI * 2, false);
+          ctx.stroke();
+        } else {
+          // Nota: punto que se estira hasta el último pulso que ocupa.
+          const xf = x0 + ((x1 - x0) * (ini.pulsos - 1)) / ini.pulsos;
+          const r = 7;
+          ctx.beginPath();
+          ctx.arc(x0, yPunto, r, 0, Math.PI * 2, false);
+          ctx.fill();
+          if (xf > x0) {
+            ctx.fillRect(x0, yPunto - r, xf - x0, r * 2);
+            ctx.beginPath();
+            ctx.arc(xf, yPunto, r, 0, Math.PI * 2, false);
+            ctx.fill();
+          }
+        }
+        ctx.restore();
+      }
+      for (let i = 0; !enCurso && i < ini.pulsos; i++) {
         const px = x0 + ((x1 - x0) * i) / ini.pulsos;
         const idx = pulsoGlobal + ini.pulso0 + i;
         const est = o.estados?.[idx];

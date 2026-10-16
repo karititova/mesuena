@@ -16,9 +16,10 @@ export function Partitura(props: {
   estados?: EstadoPulso[] | undefined;
   etiqueta: string;
   pulsoActivo?: number | null;
+  progreso?: number | null;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const { compas, ids, numCompases, silabas, estados, pulsoActivo } = props;
+  const { compas, ids, numCompases, silabas, estados, pulsoActivo, progreso } = props;
   const filas = useEstrecho();
   const dibujos = useRef(0);
   useEffect(() => {
@@ -27,7 +28,7 @@ export function Partitura(props: {
     import("@/musica/partitura").then(({ dibujarPartitura }) => {
       if (!vivo || turno !== dibujos.current || !ref.current) return;
       try {
-        dibujarPartitura(ref.current, { compas, ids, numCompases, silabas, estados, filas, pulsoActivo, colores: leerColores() });
+        dibujarPartitura(ref.current, { compas, ids, numCompases, silabas, estados, filas, pulsoActivo, progreso, colores: leerColores() });
       } catch (e) {
         console.error("Error dibujando partitura", e);
       }
@@ -35,7 +36,7 @@ export function Partitura(props: {
     return () => {
       vivo = false;
     };
-  }, [compas, ids, numCompases, silabas, estados, filas, pulsoActivo]);
+  }, [compas, ids, numCompases, silabas, estados, filas, pulsoActivo, progreso]);
   return <div ref={ref} role="img" aria-label={props.etiqueta} className="partitura-caja w-full min-h-24" />;
 }
 
