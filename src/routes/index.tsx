@@ -36,7 +36,7 @@ function Index() {
         <Link to="/clase" className="tarjeta-opcion min-h-28">
           <div>
             <p className="font-display text-[26px] font-bold">Entrar a una clase</p>
-            <p className="text-sm text-muted-foreground">Con el código de tu profesor.</p>
+            <p className="text-sm text-muted-foreground">Con el código de tu profesora.</p>
           </div>
           <span className="ml-auto text-2xl text-muted-foreground" aria-hidden>→</span>
         </Link>

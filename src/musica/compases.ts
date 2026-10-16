@@ -26,9 +26,9 @@ export function compas(id: string): Compas {
 }
 
 export const TEMPOS = [
-  { id: "muy_lento", nombre: "Muy lento", ppm: 60 },
-  { id: "lento", nombre: "Lento", ppm: 70 },
-  { id: "medio", nombre: "Medio", ppm: 80 },
+  { id: "lento", nombre: "Lento", ppm: 50 },
+  { id: "medio", nombre: "Medio", ppm: 60 },
+  { id: "rapido", nombre: "Rápido", ppm: 70 },
 ] as const;
 
 /** Reparte una secuencia de ids de figura en compases (cada figura entera dentro de su compás). */

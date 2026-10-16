@@ -26,7 +26,7 @@ function ElegirEjercicio() {
   const { nivel = 1, compas = "2/4", figuras = "" } = s;
   const [ejercicio, setEjercicio] = useState<TipoEjercicio>(s.ejercicio ?? "dictado");
   const [ppm, setPpm] = useState<number>(s.ppm ?? 60);
-  const [n, setN] = useState<number>(s.n ?? 1);
+  const [n, setN] = useState<number>(s.n ?? 2);
   return (
     <Pantalla>
       <Cabecera titulo="Elige ejercicio" contexto={`Nivel ${nivel} · ${compas} · Paso 4 de 4`} volver={<Link to="/practicar/figuras" search={{ nivel, compas }}>← Figuras</Link>} />

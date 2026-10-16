@@ -43,7 +43,7 @@ export function configDe(b: Busqueda): Config | null {
   if (!b.nivel || !b.compas || !b.ejercicio) return null;
   const figuras = listaFiguras(b.figuras);
   if (!figuras.length) return null;
-  return { nivel: b.nivel, compas: b.compas, figuras, ejercicio: b.ejercicio, ppm: b.ppm ?? 60, numCompases: b.n ?? 1 };
+  return { nivel: b.nivel, compas: b.compas, figuras, ejercicio: b.ejercicio, ppm: b.ppm ?? 60, numCompases: b.n ?? 2 };
 }
 
 export const busquedaDe = (c: Config): Busqueda => ({

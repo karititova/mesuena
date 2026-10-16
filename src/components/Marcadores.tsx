@@ -61,7 +61,7 @@ export function Marcadores(props: {
                             : tapado
                               ? "size-4 bg-transparent"
                               : est === "ok"
-                                ? "size-4 bg-primary"
+                                ? "size-4 bg-acierto"
                                 : est === "fallo"
                                   ? "size-4 bg-destructive"
                                   : seleccionado === idx
