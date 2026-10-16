@@ -102,7 +102,7 @@ describe("comprobar", () => {
   });
 });
 
-import { eventosDe, RITMO_VOZ } from "@/audio/motor";
+import { eventosDe, RITMO_VOZ, VEL_NOTA, VEL_PULSO } from "@/audio/motor";
 import { compas as cc } from "./compases";
 describe("compás de entrada", () => {
   it.each(["2/4", "6/8", "4/4", "12/8"])("siempre 1 compás en %s", (id) => {
