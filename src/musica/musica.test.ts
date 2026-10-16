@@ -77,3 +77,13 @@ describe("comprobar", () => {
     expect(r[1]!.respuesta).toBeNull();
   });
 });
+
+import { eventosDe } from "@/audio/motor";
+import { compas as cc } from "./compases";
+describe("compás de entrada", () => {
+  it.each(["2/4", "6/8", "4/4", "12/8"])("siempre 1 compás en %s", (id) => {
+    const c = cc(id);
+    const { eventos } = eventosDe(c, [], 60, 1);
+    expect(eventos.filter((e) => e.tipo === "metro" && (e.pulso ?? 0) < 0)).toHaveLength(c.pulsos);
+  });
+});

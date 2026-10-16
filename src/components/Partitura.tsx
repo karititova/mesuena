@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Compas } from "@/musica/compases";
 import type { EstadoPulso } from "@/musica/partitura";
 
@@ -15,15 +15,17 @@ export function Partitura(props: {
   silabas: boolean;
   estados?: EstadoPulso[] | undefined;
   etiqueta: string;
+  pulsoActivo?: number | null;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const { compas, ids, numCompases, silabas, estados } = props;
+  const { compas, ids, numCompases, silabas, estados, pulsoActivo } = props;
+  const filas = useEstrecho();
   useEffect(() => {
     let vivo = true;
     import("@/musica/partitura").then(({ dibujarPartitura }) => {
       if (!vivo || !ref.current) return;
       try {
-        dibujarPartitura(ref.current, { compas, ids, numCompases, silabas, estados, colores: leerColores() });
+        dibujarPartitura(ref.current, { compas, ids, numCompases, silabas, estados, filas, pulsoActivo, colores: leerColores() });
       } catch (e) {
         console.error("Error dibujando partitura", e);
       }
@@ -31,7 +33,7 @@ export function Partitura(props: {
     return () => {
       vivo = false;
     };
-  }, [compas, ids, numCompases, silabas, estados]);
+  }, [compas, ids, numCompases, silabas, estados, filas, pulsoActivo]);
   return <div ref={ref} role="img" aria-label={props.etiqueta} className="w-full min-h-24" />;
 }
 
@@ -45,4 +47,17 @@ export function MiniFigura({ id, compas, desactivada }: { id: string; compas: Co
     });
   }, [id, compas, desactivada]);
   return <div ref={ref} aria-hidden className="w-24" />;
+}
+
+/** true en pantallas de menos de 600 px (móvil vertical); se actualiza al girar. */
+function useEstrecho() {
+  const [estrecho, setEstrecho] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 599px)");
+    const f = () => setEstrecho(mq.matches);
+    f();
+    mq.addEventListener("change", f);
+    return () => mq.removeEventListener("change", f);
+  }, []);
+  return estrecho;
 }
