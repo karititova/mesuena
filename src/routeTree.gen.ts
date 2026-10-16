@@ -10,11 +10,22 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ClaseRouteImport } from './routes/clase'
 import { Route as LaboratorioRouteImport } from './routes/laboratorio'
+import { Route as PracticarIndexRouteImport } from './routes/practicar.index'
+import { Route as PracticarCompasRouteImport } from './routes/practicar.compas'
+import { Route as PracticarEjercicioRouteImport } from './routes/practicar.ejercicio'
+import { Route as PracticarFigurasRouteImport } from './routes/practicar.figuras'
+import { Route as PracticarTandaRouteImport } from './routes/practicar.tanda'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClaseRoute = ClaseRouteImport.update({
+  id: '/clase',
+  path: '/clase',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LaboratorioRoute = LaboratorioRouteImport.update({
@@ -22,31 +33,105 @@ const LaboratorioRoute = LaboratorioRouteImport.update({
   path: '/laboratorio',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PracticarIndexRoute = PracticarIndexRouteImport.update({
+  id: '/practicar/',
+  path: '/practicar/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PracticarCompasRoute = PracticarCompasRouteImport.update({
+  id: '/practicar/compas',
+  path: '/practicar/compas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PracticarEjercicioRoute = PracticarEjercicioRouteImport.update({
+  id: '/practicar/ejercicio',
+  path: '/practicar/ejercicio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PracticarFigurasRoute = PracticarFigurasRouteImport.update({
+  id: '/practicar/figuras',
+  path: '/practicar/figuras',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PracticarTandaRoute = PracticarTandaRouteImport.update({
+  id: '/practicar/tanda',
+  path: '/practicar/tanda',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/clase': typeof ClaseRoute
   '/laboratorio': typeof LaboratorioRoute
+  '/practicar/compas': typeof PracticarCompasRoute
+  '/practicar/ejercicio': typeof PracticarEjercicioRoute
+  '/practicar/figuras': typeof PracticarFigurasRoute
+  '/practicar/tanda': typeof PracticarTandaRoute
+  '/practicar/': typeof PracticarIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/clase': typeof ClaseRoute
   '/laboratorio': typeof LaboratorioRoute
+  '/practicar/compas': typeof PracticarCompasRoute
+  '/practicar/ejercicio': typeof PracticarEjercicioRoute
+  '/practicar/figuras': typeof PracticarFigurasRoute
+  '/practicar/tanda': typeof PracticarTandaRoute
+  '/practicar': typeof PracticarIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/clase': typeof ClaseRoute
   '/laboratorio': typeof LaboratorioRoute
+  '/practicar/compas': typeof PracticarCompasRoute
+  '/practicar/ejercicio': typeof PracticarEjercicioRoute
+  '/practicar/figuras': typeof PracticarFigurasRoute
+  '/practicar/tanda': typeof PracticarTandaRoute
+  '/practicar/': typeof PracticarIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/laboratorio'
+  fullPaths:
+    | '/'
+    | '/clase'
+    | '/laboratorio'
+    | '/practicar/compas'
+    | '/practicar/ejercicio'
+    | '/practicar/figuras'
+    | '/practicar/tanda'
+    | '/practicar/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/laboratorio'
-  id: '__root__' | '/' | '/laboratorio'
+  to:
+    | '/'
+    | '/clase'
+    | '/laboratorio'
+    | '/practicar/compas'
+    | '/practicar/ejercicio'
+    | '/practicar/figuras'
+    | '/practicar/tanda'
+    | '/practicar'
+  id:
+    | '__root__'
+    | '/'
+    | '/clase'
+    | '/laboratorio'
+    | '/practicar/compas'
+    | '/practicar/ejercicio'
+    | '/practicar/figuras'
+    | '/practicar/tanda'
+    | '/practicar/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ClaseRoute: typeof ClaseRoute
   LaboratorioRoute: typeof LaboratorioRoute
+  PracticarCompasRoute: typeof PracticarCompasRoute
+  PracticarEjercicioRoute: typeof PracticarEjercicioRoute
+  PracticarFigurasRoute: typeof PracticarFigurasRoute
+  PracticarTandaRoute: typeof PracticarTandaRoute
+  PracticarIndexRoute: typeof PracticarIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -58,6 +143,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/clase': {
+      id: '/clase'
+      path: '/clase'
+      fullPath: '/clase'
+      preLoaderRoute: typeof ClaseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/laboratorio': {
       id: '/laboratorio'
       path: '/laboratorio'
@@ -65,12 +157,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LaboratorioRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/practicar/': {
+      id: '/practicar/'
+      path: '/practicar'
+      fullPath: '/practicar/'
+      preLoaderRoute: typeof PracticarIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/practicar/compas': {
+      id: '/practicar/compas'
+      path: '/practicar/compas'
+      fullPath: '/practicar/compas'
+      preLoaderRoute: typeof PracticarCompasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/practicar/ejercicio': {
+      id: '/practicar/ejercicio'
+      path: '/practicar/ejercicio'
+      fullPath: '/practicar/ejercicio'
+      preLoaderRoute: typeof PracticarEjercicioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/practicar/figuras': {
+      id: '/practicar/figuras'
+      path: '/practicar/figuras'
+      fullPath: '/practicar/figuras'
+      preLoaderRoute: typeof PracticarFigurasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/practicar/tanda': {
+      id: '/practicar/tanda'
+      path: '/practicar/tanda'
+      fullPath: '/practicar/tanda'
+      preLoaderRoute: typeof PracticarTandaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ClaseRoute: ClaseRoute,
   LaboratorioRoute: LaboratorioRoute,
+  PracticarCompasRoute: PracticarCompasRoute,
+  PracticarEjercicioRoute: PracticarEjercicioRoute,
+  PracticarFigurasRoute: PracticarFigurasRoute,
+  PracticarTandaRoute: PracticarTandaRoute,
+  PracticarIndexRoute: PracticarIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
