@@ -12,6 +12,10 @@ export interface OpcionesPartitura {
   numCompases: number;
   silabas: boolean;
   estados?: EstadoPulso[] | undefined;
+  /** Dibuja cada compás en su propia fila (móvil vertical). */
+  filas?: boolean;
+  /** Índice global del punto de pulso encendido (reproducción). */
+  pulsoActivo?: number | null;
   colores: { tinta: string; secundario: string; ok: string; fallo: string; vacio: string };
 }
 
@@ -52,12 +56,35 @@ function crearSvg(div: HTMLDivElement, w: number, h: number) {
 const soloLineaCentral = (s: Stave) =>
   s.setConfigForLines([0, 1, 2, 3, 4].map((i) => ({ visible: i === 2 })));
 
+const ANCHO_LETRA = 0.62;
+
+/** Ajusta una sílaba al ancho disponible: baja hasta 11 px y, si no cabe, la parte en dos líneas. */
+export function ajustarSilaba(texto: string, ancho: number): { tam: number; lineas: string[] } {
+  const cabeEn = (t: string, tam: number) => t.length * tam * ANCHO_LETRA <= ancho;
+  for (let tam = 14; tam >= 11; tam--) if (cabeEn(texto, tam)) return { tam, lineas: [texto] };
+  const seps = [...texto].map((ch, i) => (ch === "-" || ch === " " ? i : -1)).filter((i) => i > 0);
+  if (seps.length) {
+    const mitad = texto.length / 2;
+    const corte = seps.reduce((a, b) => (Math.abs(b - mitad) < Math.abs(a - mitad) ? b : a));
+    const l1 = texto.slice(0, corte + (texto[corte] === "-" ? 1 : 0)).trim();
+    const l2 = texto.slice(corte + 1).trim();
+    const largo = Math.max(l1.length, l2.length);
+    let tam = 14;
+    while (tam > 11 && largo * tam * ANCHO_LETRA > ancho) tam--;
+    return { tam, lineas: [l1, l2] };
+  }
+  return { tam: 11, lineas: [texto] };
+}
+
 export function dibujarPartitura(div: HTMLDivElement, o: OpcionesPartitura) {
   const { compas: c } = o;
   const cabecera = 70;
-  const anchoCompas = c.pulsos * (o.numCompases > 1 ? 66 : 85);
-  const W = cabecera + anchoCompas * o.numCompases + 12;
-  const H = o.silabas ? 150 : 128;
+  const filas = !!o.filas && o.numCompases > 1;
+  const anchoPulso = filas ? 75 : o.numCompases > 1 ? 66 : 80;
+  const anchoCompas = c.pulsos * anchoPulso;
+  const W = filas ? cabecera + anchoCompas + 12 : cabecera + anchoCompas * o.numCompases + 12;
+  const altoFila = o.silabas ? 160 : 128;
+  const H = filas ? altoFila * o.numCompases : altoFila;
   const ctx = crearSvg(div, W, H);
   ctx.setFont("Inter", 12);
 
@@ -66,10 +93,13 @@ export function dibujarPartitura(div: HTMLDivElement, o: OpcionesPartitura) {
   let x = 6;
 
   for (let m = 0; m < o.numCompases; m++) {
-    const ancho = m === 0 ? cabecera + anchoCompas : anchoCompas;
-    const stave = new Stave(x, 10, ancho);
+    const y0 = filas ? m * altoFila : 0;
+    if (filas) x = 6;
+    const ancho = filas ? W - 12 : m === 0 ? cabecera + anchoCompas : anchoCompas;
+    const stave = new Stave(x, 10 + y0, ancho);
     soloLineaCentral(stave);
     if (m === 0) stave.addClef("percussion").addTimeSignature(`${c.num}/${c.den}`);
+    else if (filas) stave.addClef("percussion");
     if (m === o.numCompases - 1) stave.setEndBarType(BarlineType.END);
     stave.setContext(ctx).draw();
 
@@ -88,7 +118,6 @@ export function dibujarPartitura(div: HTMLDivElement, o: OpcionesPartitura) {
       beamables.push(...notas);
       usados += f.pulsos;
     }
-    // Pulsos que faltan: notas fantasma invisibles para mantener el espaciado
     for (let p = usados; p < c.pulsos; p++) {
       const g = new GhostNote({ duration: c.tipo === "simple" ? "q" : "qd" });
       inicios.push({ nota: g, pulsos: 1, silaba: "", pulso0: p });
@@ -106,30 +135,35 @@ export function dibujarPartitura(div: HTMLDivElement, o: OpcionesPartitura) {
     voice.draw(ctx, stave);
     beams.forEach((b) => b.setContext(ctx).draw());
 
-    // Marcadores de pulso y sílabas
-    const finX = stave.getNoteEndX() - 8;
-    const yPunto = 108;
+    const finX = stave.getNoteEndX() - 4;
+    const yPunto = 108 + y0;
     inicios.forEach((ini, k) => {
       const x0 = ini.nota.getAbsoluteX() + 6;
       const x1 = k + 1 < inicios.length ? inicios[k + 1]!.nota.getAbsoluteX() + 6 : finX;
       for (let i = 0; i < ini.pulsos; i++) {
         const px = x0 + ((x1 - x0) * i) / ini.pulsos;
-        const est = o.estados?.[pulsoGlobal + ini.pulso0 + i];
+        const idx = pulsoGlobal + ini.pulso0 + i;
+        const est = o.estados?.[idx];
+        const activo = o.pulsoActivo === idx;
         const vacio = ini.silaba === "";
         ctx.save();
-        const col = est === "ok" ? o.colores.ok : est === "fallo" ? o.colores.fallo : vacio ? o.colores.vacio : o.colores.secundario;
+        const col = activo
+          ? o.colores.tinta
+          : est === "ok" ? o.colores.ok : est === "fallo" ? o.colores.fallo : vacio ? o.colores.vacio : o.colores.secundario;
         ctx.setFillStyle(col);
         ctx.setStrokeStyle(col);
         ctx.beginPath();
-        ctx.arc(px, yPunto, est ? 6 : 4, 0, Math.PI * 2, false);
+        ctx.arc(px, yPunto, activo ? 8 : est ? 6 : 4, 0, Math.PI * 2, false);
         ctx.fill();
         ctx.restore();
       }
       if (o.silabas && ini.silaba) {
+        const texto = ini.silaba === "(silencio)" ? "—" : ini.silaba;
+        const { tam, lineas } = ajustarSilaba(texto, Math.max(20, x1 - x0 - 6));
         ctx.save();
         ctx.setFillStyle(o.colores.secundario);
-        ctx.setFont("Inter", ini.silaba.length > 8 ? 10 : 12, 600);
-        ctx.fillText(ini.silaba === "(silencio)" ? "—" : ini.silaba, x0 - 4, 134);
+        ctx.setFont("Inter", tam, 600);
+        lineas.forEach((l, j) => ctx.fillText(l, x0 - 4, 134 + y0 + j * (tam + 2)));
         ctx.restore();
       }
     });
