@@ -1,5 +1,5 @@
 // Dibujo de partituras rítmicas con VexFlow 4.2. Solo navegador (importar dinámicamente).
-import { Beam, Dot, Formatter, Fraction, GhostNote, Renderer, Stave, StaveNote, Voice } from "vexflow";
+import { BarlineType, Beam, Dot, Formatter, Fraction, GhostNote, Renderer, Stave, StaveNote, Voice } from "vexflow";
 import type { StemmableNote } from "vexflow";
 import { repartirEnCompases, type Compas } from "./compases";
 import { figura } from "./figuras";
@@ -146,24 +146,17 @@ export function dibujarMiniFigura(div: HTMLDivElement, id: string, c: Compas, co
   const ctx = crearSvg(div, W, H);
   const stave = new Stave(0, 0, W);
   soloLineaCentral(stave);
-  stave.setBegBarType(0 as never);
-  stave.setEndBarType(0 as never);
-  stave.setContext(ctx);
+  stave.setBegBarType(BarlineType.NONE).setEndBarType(BarlineType.NONE);
   const notas = notasDeFigura(id, c, color);
+  stave.setNoteStartX(notas.length === 1 ? 46 : 20);
+  stave.setContext(ctx).draw();
   const voice = new Voice({ num_beats: c.num, beat_value: c.den }).setMode(Voice.Mode.SOFT);
   voice.addTickables(notas);
   const beams = Beam.generateBeams(notas, {
     groups: [c.tipo === "simple" ? new Fraction(1, 4) : new Fraction(3, 8)],
     stem_direction: 1,
   });
-  new Formatter().joinVoices([voice]).format([voice], W - 40);
-  // centrar
-  stave.setNoteStartX(notas.length === 1 ? 45 : 22);
-  stave.drawWithStyle?.();
-  ctx.save();
-  ctx.setStrokeStyle(color);
-  stave.draw();
-  ctx.restore();
+  new Formatter().joinVoices([voice]).format([voice], notas.length === 1 ? 20 : 66);
   voice.draw(ctx, stave);
   beams.forEach((b) => b.setContext(ctx).draw());
 }
