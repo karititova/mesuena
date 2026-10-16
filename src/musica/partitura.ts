@@ -56,11 +56,18 @@ function crearSvg(div: HTMLDivElement, w: number, h: number) {
 const soloLineaCentral = (s: Stave) =>
   s.setConfigForLines([0, 1, 2, 3, 4].map((i) => ({ visible: i === 2 })));
 
-const ANCHO_LETRA = 0.62;
+const ANCHO_LETRA = 0.7;
+let lienzo: CanvasRenderingContext2D | null | undefined;
+function medir(t: string, tam: number): number {
+  if (lienzo === undefined) lienzo = typeof document !== "undefined" ? document.createElement("canvas").getContext("2d") : null;
+  if (!lienzo) return t.length * tam * ANCHO_LETRA;
+  lienzo.font = `600 ${tam}px Inter, sans-serif`;
+  return lienzo.measureText(t).width + 2;
+}
 
 /** Ajusta una sílaba al ancho disponible: baja hasta 11 px y, si no cabe, la parte en dos líneas. */
 export function ajustarSilaba(texto: string, ancho: number): { tam: number; lineas: string[] } {
-  const cabeEn = (t: string, tam: number) => t.length * tam * ANCHO_LETRA <= ancho;
+  const cabeEn = (t: string, tam: number) => medir(t, tam) <= ancho;
   for (let tam = 14; tam >= 11; tam--) if (cabeEn(texto, tam)) return { tam, lineas: [texto] };
   const seps = [...texto].map((ch, i) => (ch === "-" || ch === " " ? i : -1)).filter((i) => i > 0);
   if (seps.length) {
@@ -70,7 +77,8 @@ export function ajustarSilaba(texto: string, ancho: number): { tam: number; line
     const l2 = texto.slice(corte + 1).trim();
     const largo = Math.max(l1.length, l2.length);
     let tam = 14;
-    while (tam > 11 && largo * tam * ANCHO_LETRA > ancho) tam--;
+    while (tam > 11 && Math.max(medir(l1, tam), medir(l2, tam)) > ancho) tam--;
+    void largo;
     return { tam, lineas: [l1, l2] };
   }
   return { tam: 11, lineas: [texto] };
