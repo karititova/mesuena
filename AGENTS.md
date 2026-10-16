@@ -14,3 +14,5 @@
 - VexFlow and Tone.js are imported dynamically in the browser only — both touch DOM/Web Audio and break SSR.
 - All audio timing goes through Tone.Transport/Tone.Part, never setTimeout — tempo must be exact.
 - Beams always use explicit groups (1/4 simple, 3/8 compound) — default grouping is musically wrong.
+- Practice-flow logic (exercise creation, grading, device storage, URL params) lives in `src/practica/` as pure modules; routes only render — keeps it testable and reusable when classes arrive.
+- The Practicar flow passes its configuration through URL search params between steps — lets «Continuar» and «Cambiar ejercicio» rebuild any step from a link.
