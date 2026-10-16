@@ -41,14 +41,14 @@ export function repartirEnCompases(ids: string[], c: Compas): string[][] {
       res.push([]);
       usados = 0;
     }
-    res[res.length - 1].push(id);
+    res[res.length - 1]!.push(id);
     usados += p;
     if (usados === c.pulsos) {
       res.push([]);
       usados = 0;
     }
   }
-  if (res.length > 1 && res[res.length - 1].length === 0) res.pop();
+  if (res.length > 1 && res[res.length - 1]!.length === 0) res.pop();
   return res;
 }
 

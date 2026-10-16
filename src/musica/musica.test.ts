@@ -37,7 +37,7 @@ describe("generarRitmo", () => {
             expect(f.tipo).toBe(c.tipo);
             expect(f.nivel).toBeLessThanOrEqual(nivel);
             expect(usados + f.pulsos).toBeLessThanOrEqual(c.pulsos);
-            compases[compases.length - 1].push(id);
+            compases[compases.length - 1]!.push(id);
             usados += f.pulsos;
             if (usados === c.pulsos) {
               usados = 0;
@@ -47,7 +47,7 @@ describe("generarRitmo", () => {
           expect(usados).toBe(0);
           compases.pop();
           expect(compases).toHaveLength(2);
-          expect(esSilencio(figura(ids[0]))).toBe(false);
+          expect(esSilencio(figura(ids[0]!))).toBe(false);
           for (const m of compases) {
             expect(m.every((id) => esSilencio(figura(id)))).toBe(false);
             if (nivel === 1) expect(m.filter((id) => esSilencio(figura(id))).length).toBeLessThanOrEqual(1);
@@ -68,12 +68,12 @@ describe("comprobar", () => {
   it("compara pulso a pulso", () => {
     const r = comprobar(["negra", "negra", "dos_corcheas"], ["blanca", "dos_corcheas"]);
     expect(r.map((x) => x.correcto)).toEqual([false, false, true]);
-    expect(r[0].respuesta?.figuraId).toBe("negra");
-    expect(r[0].esperado.figuraId).toBe("blanca");
+    expect(r[0]!.respuesta?.figuraId).toBe("negra");
+    expect(r[0]!.esperado.figuraId).toBe("blanca");
   });
   it("respuesta incompleta cuenta como fallo", () => {
     const r = comprobar(["negra"], ["negra", "negra"]);
     expect(r.map((x) => x.correcto)).toEqual([true, false]);
-    expect(r[1].respuesta).toBeNull();
+    expect(r[1]!.respuesta).toBeNull();
   });
 });

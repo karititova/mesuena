@@ -66,11 +66,11 @@ function generarCompas(
     });
     const total = pesos.reduce((a, b) => a + b, 0);
     let r = azar() * total;
-    let elegido = candidatos[candidatos.length - 1];
+    let elegido = candidatos[candidatos.length - 1]!;
     for (let i = 0; i < candidatos.length; i++) {
-      r -= pesos[i];
+      r -= pesos[i]!;
       if (r < 0) {
-        elegido = candidatos[i];
+        elegido = candidatos[i]!;
         break;
       }
     }

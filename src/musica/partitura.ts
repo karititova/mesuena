@@ -11,7 +11,7 @@ export interface OpcionesPartitura {
   ids: string[];
   numCompases: number;
   silabas: boolean;
-  estados?: EstadoPulso[];
+  estados?: EstadoPulso[] | undefined;
   colores: { tinta: string; secundario: string; ok: string; fallo: string; vacio: string };
 }
 
@@ -21,7 +21,7 @@ const DUR_COMP: Record<number, string> = { 12: "hd", 6: "qd", 4: "q", 2: "8", 1:
 function notasDeFigura(id: string, c: Compas, color?: string): StaveNote[] {
   const tabla = c.tipo === "simple" ? DUR_SIMPLE : DUR_COMP;
   return figura(id).duraciones.map((d) => {
-    const dur = tabla[d.unidades];
+    const dur = tabla[d.unidades]!;
     const nota = new StaveNote({
       keys: ["b/4"],
       duration: dur + (d.silencio ? "r" : ""),
@@ -83,7 +83,7 @@ export function dibujarPartitura(div: HTMLDivElement, o: OpcionesPartitura) {
       const estado = o.estados?.[pulsoGlobal + usados];
       const color = estado === "ok" ? o.colores.ok : estado === "fallo" ? o.colores.fallo : o.colores.tinta;
       const notas = notasDeFigura(id, c, color);
-      inicios.push({ nota: notas[0], pulsos: f.pulsos, silaba: f.silaba, pulso0: usados });
+      inicios.push({ nota: notas[0]!, pulsos: f.pulsos, silaba: f.silaba, pulso0: usados });
       tickables.push(...notas);
       beamables.push(...notas);
       usados += f.pulsos;
