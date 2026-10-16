@@ -5,7 +5,7 @@ import type { Compas } from "@/musica/compases";
 
 type ToneT = typeof ToneNS;
 let Tone: ToneT | null = null;
-let ritmoSynth: ToneNS.MembraneSynth | null = null;
+let ritmoSynth: ToneNS.PolySynth<ToneNS.MembraneSynth> | null = null;
 let metroSynth: ToneNS.MembraneSynth | null = null;
 let parte: ToneNS.Part | null = null;
 
@@ -15,12 +15,16 @@ export const HUECO = 0.04;
 export const VEL_PULSO = 1;
 export const VEL_NOTA = Math.pow(10, -2.5 / 20);
 
-/** Voz del ritmo: MembraneSynth agudo tipo bloque de madera, golpe corto, mismo timbre en todas las notas. */
+/**
+ * Voz del ritmo: bloque de madera. Siempre la misma nota fija y la misma duración corta;
+ * polifónico para que ningún ataque se solape con el anterior; sin deslizamiento de altura.
+ * El acento de la primera nota de cada pulso es solo de volumen.
+ */
 export const RITMO_VOZ = {
-  nota: "A5",
+  nota: "C5",
   golpe: 0.05,
-  pitchDecay: 0.006,
-  octaves: 1.5,
+  pitchDecay: 0.01,
+  octaves: 1,
   envolvente: { attack: 0.001, decay: 0.07, sustain: 0, release: 0.02 },
   volumen: -4,
 };
@@ -40,7 +44,7 @@ export async function iniciarAudio(): Promise<{ audioSession: boolean }> {
   }
   await Tone.start();
   if (!ritmoSynth) {
-    ritmoSynth = new Tone.MembraneSynth({
+    ritmoSynth = new Tone.PolySynth(Tone.MembraneSynth, {
       pitchDecay: RITMO_VOZ.pitchDecay,
       octaves: RITMO_VOZ.octaves,
       envelope: RITMO_VOZ.envolvente,

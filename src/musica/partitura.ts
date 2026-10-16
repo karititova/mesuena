@@ -193,7 +193,9 @@ export function dibujarPartitura(div: HTMLDivElement, o: OpcionesPartitura) {
           ctx.stroke();
         } else {
           // Nota: punto que se estira hasta el último pulso que ocupa.
-          const xf = x0 + ((x1 - x0) * (ini.pulsos - 1)) / ini.pulsos;
+          // Crece pulso a pulso con el metrónomo hasta llenar su último pulso.
+          const llenos = Math.min(ini.pulsos - 1, (o.progreso ?? idx0) - idx0);
+          const xf = x0 + ((x1 - x0) * llenos) / ini.pulsos;
           const r = 7;
           ctx.beginPath();
           ctx.arc(x0, yPunto, r, 0, Math.PI * 2, false);
