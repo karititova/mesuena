@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { COMPASES, cabe, compas } from "./compases";
 import { comprobar, expandirPulsos } from "./comprobador";
 import { esSilencio, figura, figurasDisponibles } from "./figuras";
-import { generarRitmo } from "./generador";
+import { esApoyo, generarRitmo, tieneSemis } from "./generador";
 
 describe("figuras", () => {
   it("las duraciones suman pulsos × unidades de pulso", () => {
@@ -52,6 +52,18 @@ describe("generarRitmo", () => {
             expect(m.every((id) => esSilencio(figura(id)))).toBe(false);
             if (nivel === 1) expect(m.filter((id) => esSilencio(figura(id))).length).toBeLessThanOrEqual(1);
           }
+          if (nivel === 2) {
+            for (const m of compases) {
+              const n2 = m.filter((id) => figura(id).nivel === 2).length;
+              expect(n2).toBeLessThanOrEqual(c.pulsos / 2);
+              expect(m.some(esApoyo)).toBe(true);
+            }
+            let seguidos = 0;
+            for (const id of ids) {
+              seguidos = tieneSemis(id) ? seguidos + 1 : 0;
+              expect(seguidos).toBeLessThanOrEqual(2);
+            }
+          }
           for (let k = 2; k < ids.length; k++) {
             expect(ids[k] === ids[k - 1] && ids[k] === ids[k - 2]).toBe(false);
           }
@@ -85,5 +97,25 @@ describe("compás de entrada", () => {
     const c = cc(id);
     const { eventos } = eventosDe(c, [], 60, 1);
     expect(eventos.filter((e) => e.tipo === "metro" && (e.pulso ?? 0) < 0)).toHaveLength(c.pulsos);
+  });
+});
+
+describe("sonido del ritmo", () => {
+  const ritmo = (ids: string[]) => eventosDe(cc("2/4"), ids, 60, 1).eventos.filter((e) => e.tipo === "ritmo");
+  it("la blanca se sostiene entera y negra + silencio no", () => {
+    expect(ritmo(["blanca"])[0]!.dur).toBeCloseTo(2 - 0.04);
+    const ns = ritmo(["negra", "silencio_negra"]);
+    expect(ns).toHaveLength(1);
+    expect(ns[0]!.dur).toBeCloseTo(1 - 0.04);
+  });
+  it("la primera nota de cada pulso suena más fuerte", () => {
+    const v = ritmo(["dos_corcheas", "negra"]).map((e) => e.vel);
+    expect(v[0]).toBeGreaterThan(v[1]!);
+    expect(v[2]).toBe(v[0]);
+  });
+  it("sin Pulso el metrónomo calla tras la entrada", () => {
+    const m = eventosDe(cc("2/4"), ["blanca"], 60, 1, false).eventos.filter((e) => e.tipo === "metro");
+    expect(m.filter((e) => (e.pulso ?? 0) < 0).every((e) => e.vel > 0)).toBe(true);
+    expect(m.filter((e) => (e.pulso ?? 0) >= 0).every((e) => e.vel === 0)).toBe(true);
   });
 });

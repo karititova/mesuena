@@ -20,10 +20,12 @@ export function Partitura(props: {
   const ref = useRef<HTMLDivElement>(null);
   const { compas, ids, numCompases, silabas, estados, pulsoActivo } = props;
   const filas = useEstrecho();
+  const dibujos = useRef(0);
   useEffect(() => {
     let vivo = true;
+    const turno = ++dibujos.current;
     import("@/musica/partitura").then(({ dibujarPartitura }) => {
-      if (!vivo || !ref.current) return;
+      if (!vivo || turno !== dibujos.current || !ref.current) return;
       try {
         dibujarPartitura(ref.current, { compas, ids, numCompases, silabas, estados, filas, pulsoActivo, colores: leerColores() });
       } catch (e) {
@@ -34,7 +36,7 @@ export function Partitura(props: {
       vivo = false;
     };
   }, [compas, ids, numCompases, silabas, estados, filas, pulsoActivo]);
-  return <div ref={ref} role="img" aria-label={props.etiqueta} className="w-full min-h-24" />;
+  return <div ref={ref} role="img" aria-label={props.etiqueta} className="partitura-caja w-full min-h-24" />;
 }
 
 export function MiniFigura({ id, compas, desactivada }: { id: string; compas: Compas; desactivada?: boolean }) {

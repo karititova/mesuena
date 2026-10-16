@@ -31,6 +31,7 @@ function Laboratorio() {
   const [numCompases, setNumCompases] = useState(1);
   const [ppm, setPpm] = useState<number>(60);
   const [silabas, setSilabas] = useState(false);
+  const [conPulso, setConPulso] = useState(true);
   const [pulso, setPulso] = useState<number | null>(null);
   const [ritmo, setRitmo] = useState<string[]>([]);
   const [respuesta, setRespuesta] = useState<string[]>([]);
@@ -71,6 +72,7 @@ function Laboratorio() {
         setPulso(null);
       },
       setPulso,
+      conPulso,
     );
   };
 
@@ -105,9 +107,9 @@ function Laboratorio() {
           <Link to="/" className="text-sm font-medium text-muted-foreground hover:text-foreground">
             ← Me suena
           </Link>
-          <h1 className="font-display text-[40px] leading-tight font-bold text-foreground">Laboratorio</h1>
+          <h1 className="font-display text-[36px] leading-tight font-bold text-foreground">Laboratorio</h1>
         </div>
-        <Baldo estado={baldo} className="size-20" />
+        <Baldo estado="neutro" className="size-20" />
       </header>
 
       <section className="tarjeta space-y-4">
@@ -133,7 +135,7 @@ function Laboratorio() {
 
       <section className="tarjeta space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-[32px] leading-none font-bold">Ritmo</h2>
+          <h2 className="font-display text-[26px] leading-none font-semibold">Ritmo</h2>
           <label className="flex min-h-11 items-center gap-2 text-sm text-muted-foreground">
             <input type="checkbox" checked={silabas} onChange={(e) => setSilabas(e.target.checked)} className="size-5 accent-primary" />
             Sílabas
@@ -144,30 +146,39 @@ function Laboratorio() {
             compas={c}
             ids={ritmo}
             numCompases={numCompases}
-            silabas={silabas || resultado !== null}
+            silabas={silabas}
             pulsoActivo={sonando === "ritmo" ? marca : null}
             etiqueta="Partitura del ritmo"
           />
         )}
         <Entrada c={c} pulso={sonando ? pulso : null} />
-        <div className="grid grid-cols-2 gap-3">
-          <button type="button" onClick={() => tocar("ritmo")} disabled={sonando !== null} className="boton boton-primario">
+        <div className="grid grid-cols-[1fr_auto_auto] gap-2">
+          <button type="button" onClick={() => tocar("ritmo")} disabled={sonando !== null} className="boton boton-primario whitespace-nowrap px-3">
             ▶ Reproducir
           </button>
-          <button type="button" onClick={detener} className="boton boton-secundario">
+          <button type="button" onClick={detener} className="boton boton-secundario whitespace-nowrap px-4">
             ■ Parar
+          </button>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={conPulso}
+            onClick={() => setConPulso(!conPulso)}
+            className={conPulso ? "boton boton-primario px-4" : "boton boton-secundario px-4"}
+          >
+            Pulso
           </button>
         </div>
       </section>
 
       <section className="tarjeta space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-[32px] leading-none font-bold">Tu respuesta</h2>
+          <h2 className="font-display text-[26px] leading-none font-semibold">Tu respuesta</h2>
           <span className="text-lg font-bold text-muted-foreground">
             {pulsosRespuesta}/{totalPulsos}
           </span>
         </div>
-        <Partitura compas={c} ids={respuesta} numCompases={numCompases} silabas estados={estados} pulsoActivo={sonando === "respuesta" ? marca : null} etiqueta="Partitura de tu respuesta" />
+        <Partitura compas={c} ids={respuesta} numCompases={numCompases} silabas={silabas} estados={estados} pulsoActivo={sonando === "respuesta" ? marca : null} etiqueta="Partitura de tu respuesta" />
 
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {paleta.map((f) => {
@@ -209,7 +220,7 @@ function Laboratorio() {
           <div className="flex items-center gap-4">
             <Baldo estado={baldo} className="size-24" />
             <div>
-              <p className="text-4xl font-bold">
+              <p className="font-sans text-4xl font-bold tabular-nums">
                 {aciertos}/{resultado.length}
               </p>
               <p className="text-sm text-muted-foreground">{aciertos === resultado.length ? "¡Todos los pulsos bien!" : "Revisa los pulsos marcados."}</p>
@@ -244,14 +255,14 @@ function describir(p: { figuraId: string; indice: number }) {
 
 function Entrada({ c, pulso }: { c: { pulsos: number }; pulso: number | null }) {
   const enEntrada = pulso !== null && pulso < 0;
-  const actual = enEntrada ? pulso + c.pulsos : -1;
+  const actual = pulso === null ? -1 : (((pulso % c.pulsos) + c.pulsos) % c.pulsos);
   return (
     <div className="flex min-h-9 items-center justify-between gap-3 text-sm text-muted-foreground" aria-live="polite">
       <span>{pulso !== null && !enEntrada ? "Ahora el ritmo" : "Entrada: 1 compás de clic y después el ritmo"}</span>
-      {enEntrada && (
-        <span className="text-xl font-bold tabular-nums">
+      {pulso !== null && (
+        <span className="font-sans text-[28px] leading-none font-bold tabular-nums">
           {Array.from({ length: c.pulsos }, (_, i) => (
-            <span key={i} className={i === actual ? "text-foreground" : "text-muted-foreground/40"}>
+            <span key={i} className={i === actual ? "text-primary" : "text-muted-foreground"}>
               {i > 0 && " · "}
               {i + 1}
             </span>
