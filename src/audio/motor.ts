@@ -30,10 +30,12 @@ export async function iniciarAudio(): Promise<{ audioSession: boolean }> {
   }
   await Tone.start();
   if (!ritmoSynth) {
+    const reverb = new Tone.Reverb({ decay: 0.8, wet: 0.2 }).toDestination();
+    const filtro = new Tone.Filter(1200, "lowpass").connect(reverb);
     ritmoSynth = new Tone.Synth({
-      oscillator: { type: "triangle" },
-      envelope: { attack: 0.01, decay: 0, sustain: 1, release: 0.05 },
-    }).toDestination();
+      oscillator: { type: "sine" },
+      envelope: { attack: 0.025, decay: 0.25, sustain: 0.6, release: 0.08 },
+    }).connect(filtro);
     ritmoSynth.volume.value = -8;
     metroSynth = new Tone.MembraneSynth({
       pitchDecay: 0.01,
@@ -125,7 +127,7 @@ export async function reproducir(
   const T = Tone;
   const { eventos, fin } = eventosDe(c, ids, ppm, numCompases, conPulso);
   parte = new T.Part<Evento>((time, ev) => {
-    if (ev.tipo === "ritmo") ritmoSynth!.triggerAttackRelease("A4", ev.dur!, time, ev.vel);
+    if (ev.tipo === "ritmo") ritmoSynth!.triggerAttackRelease("A3", ev.dur!, time, ev.vel);
     else {
       if (ev.vel > 0) metroSynth!.triggerAttackRelease(ev.fuerte ? "E2" : "C2", 0.04, time, ev.vel);
       if (alPulso && ev.pulso !== undefined) {
