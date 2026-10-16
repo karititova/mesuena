@@ -55,7 +55,7 @@ const soloLineaCentral = (s: Stave) =>
 export function dibujarPartitura(div: HTMLDivElement, o: OpcionesPartitura) {
   const { compas: c } = o;
   const cabecera = 70;
-  const anchoCompas = c.pulsos * 85;
+  const anchoCompas = c.pulsos * (o.numCompases > 1 ? 66 : 85);
   const W = cabecera + anchoCompas * o.numCompases + 12;
   const H = o.silabas ? 150 : 128;
   const ctx = crearSvg(div, W, H);
@@ -128,7 +128,7 @@ export function dibujarPartitura(div: HTMLDivElement, o: OpcionesPartitura) {
       if (o.silabas && ini.silaba) {
         ctx.save();
         ctx.setFillStyle(o.colores.secundario);
-        ctx.setFont("Inter", ini.silaba.length > 8 ? 9 : 11, 600);
+        ctx.setFont("Inter", ini.silaba.length > 8 ? 10 : 12, 600);
         ctx.fillText(ini.silaba === "(silencio)" ? "—" : ini.silaba, x0 - 4, 134);
         ctx.restore();
       }

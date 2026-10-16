@@ -83,7 +83,7 @@ function Laboratorio() {
   };
 
   return (
-    <main className="mx-auto max-w-3xl space-y-5 px-4 pb-16 pt-6">
+    <main className="mx-auto max-w-3xl overflow-x-hidden space-y-5 px-4 pb-16 pt-6">
       <header className="flex items-end justify-between gap-4">
         <div>
           <Link to="/" className="text-sm font-medium text-muted-foreground hover:text-foreground">
