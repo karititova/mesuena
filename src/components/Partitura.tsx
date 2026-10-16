@@ -41,7 +41,7 @@ export function Partitura(props: {
         if (tactil && svg) {
           for (const z of zonas) {
             const r = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-            Object.entries({ x: z.x, y: z.y, width: z.w, height: z.h, fill: "transparent", role: "button", "aria-label": `Pulso ${z.pulso + 1}` }).forEach(([k, v]) => r.setAttribute(k, String(v)));
+            Object.entries({ x: z.x, y: z.y, width: z.w, height: z.h, fill: "transparent", stroke: "none", role: "button", "aria-label": `Pulso ${z.pulso + 1}` }).forEach(([k, v]) => r.setAttribute(k, String(v)));
             r.style.cursor = "pointer";
             r.addEventListener("click", () => tocar.current?.(z.pulso));
             svg.appendChild(r);

@@ -258,7 +258,7 @@ export function dibujarPartitura(div: HTMLDivElement, o: OpcionesPartitura): Zon
   const svg = div.querySelector("svg");
   if (sel && svg) {
     const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-    Object.entries({ x: sel.x + 2, y: sel.y, width: sel.w - 4, height: sel.h, rx: 10, fill: o.colores.seleccion }).forEach(([k, v]) => rect.setAttribute(k, String(v)));
+    Object.entries({ x: sel.x + 2, y: sel.y, width: sel.w - 4, height: sel.h, rx: 10, fill: o.colores.seleccion, stroke: "none" }).forEach(([k, v]) => rect.setAttribute(k, String(v)));
     svg.insertBefore(rect, svg.firstChild);
   }
   return zonas;
