@@ -105,7 +105,7 @@ function Laboratorio() {
           <Link to="/" className="text-sm font-medium text-muted-foreground hover:text-foreground">
             ← Me suena
           </Link>
-          <h1 className="font-display text-[40px] leading-tight font-bold text-foreground">Laboratorio</h1>
+          <h1 className="font-display text-[36px] leading-tight font-bold text-foreground">Laboratorio</h1>
         </div>
         <Baldo estado={baldo} className="size-20" />
       </header>
@@ -133,7 +133,7 @@ function Laboratorio() {
 
       <section className="tarjeta space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-[32px] leading-none font-bold">Ritmo</h2>
+          <h2 className="font-display text-[26px] leading-none font-semibold">Ritmo</h2>
           <label className="flex min-h-11 items-center gap-2 text-sm text-muted-foreground">
             <input type="checkbox" checked={silabas} onChange={(e) => setSilabas(e.target.checked)} className="size-5 accent-primary" />
             Sílabas
@@ -162,7 +162,7 @@ function Laboratorio() {
 
       <section className="tarjeta space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-[32px] leading-none font-bold">Tu respuesta</h2>
+          <h2 className="font-display text-[26px] leading-none font-semibold">Tu respuesta</h2>
           <span className="text-lg font-bold text-muted-foreground">
             {pulsosRespuesta}/{totalPulsos}
           </span>
@@ -209,7 +209,7 @@ function Laboratorio() {
           <div className="flex items-center gap-4">
             <Baldo estado={baldo} className="size-24" />
             <div>
-              <p className="text-4xl font-bold">
+              <p className="font-sans text-4xl font-bold tabular-nums">
                 {aciertos}/{resultado.length}
               </p>
               <p className="text-sm text-muted-foreground">{aciertos === resultado.length ? "¡Todos los pulsos bien!" : "Revisa los pulsos marcados."}</p>

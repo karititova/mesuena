@@ -63,7 +63,7 @@
   --color-marron: var(--marron);
   --color-marron-claro: var(--marron-claro);
   --color-error-claro: var(--error-claro);
-  --font-display: "Caveat", cursive;
+  --font-display: "Fraunces", Georgia, serif;
   --font-sans: "Inter", system-ui, sans-serif;
 }
 
@@ -171,4 +171,9 @@
 .baldo-halo {
   background: radial-gradient(circle, var(--halo) 0%, color-mix(in oklab, var(--halo) 60%, transparent) 40%, transparent 70%);
   filter: blur(6px);
+}
+
+/* Móvil en horizontal: la partitura no ocupa toda la pantalla. */
+@media (orientation: landscape) and (max-height: 500px) {
+  .partitura-caja svg { max-height: 150px; width: auto !important; max-width: 100%; margin-inline: auto; }
 }
