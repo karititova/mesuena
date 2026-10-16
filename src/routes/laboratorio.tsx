@@ -67,7 +67,7 @@ function Laboratorio() {
     setSonando(null);
   };
 
-  const estados = useMemo(() => resultado?.map((r) => (r.correcto ? "ok" : "fallo") as const), [resultado]);
+  const estados = useMemo(() => resultado?.map((r) => (r.correcto ? ("ok" as const) : ("fallo" as const))), [resultado]);
   const aciertos = resultado?.filter((r) => r.correcto).length ?? 0;
   const baldo: EstadoBaldo = !resultado
     ? sonando

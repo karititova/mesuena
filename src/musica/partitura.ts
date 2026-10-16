@@ -111,7 +111,7 @@ export function dibujarPartitura(div: HTMLDivElement, o: OpcionesPartitura) {
     const yPunto = 108;
     inicios.forEach((ini, k) => {
       const x0 = ini.nota.getAbsoluteX() + 6;
-      const x1 = k + 1 < inicios.length ? inicios[k + 1].nota.getAbsoluteX() + 6 : finX;
+      const x1 = k + 1 < inicios.length ? inicios[k + 1]!.nota.getAbsoluteX() + 6 : finX;
       for (let i = 0; i < ini.pulsos; i++) {
         const px = x0 + ((x1 - x0) * i) / ini.pulsos;
         const est = o.estados?.[pulsoGlobal + ini.pulso0 + i];

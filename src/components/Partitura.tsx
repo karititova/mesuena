@@ -13,7 +13,7 @@ export function Partitura(props: {
   ids: string[];
   numCompases: number;
   silabas: boolean;
-  estados?: EstadoPulso[];
+  estados?: EstadoPulso[] | undefined;
   etiqueta: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
