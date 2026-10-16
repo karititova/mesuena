@@ -152,7 +152,7 @@
 @utility boton-paleta {
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .125rem;
   min-height: 64px; padding: .5rem; border-radius: 12px;
-  background: var(--color-background); border: 1px solid var(--color-border);
+  background: var(--color-card); border: 1px solid var(--color-marron-claro);
   transition: background-color .15s, transform .1s;
   &:active:not(:disabled) { transform: scale(0.97); background: var(--color-verde-claro); }
   &:disabled { opacity: .4; cursor: not-allowed; }
@@ -176,4 +176,30 @@
 /* Móvil en horizontal: la partitura no ocupa toda la pantalla. */
 @media (orientation: landscape) and (max-height: 500px) {
   .partitura-caja svg { max-height: 150px; width: auto !important; max-width: 100%; margin-inline: auto; }
+}
+
+/* Cabecera de pantalla: halo muy difuminado que se funde con el crema. */
+.cabecera-halo {
+  background:
+    radial-gradient(40% 60% at 25% 50%, color-mix(in oklab, var(--verde-claro) 90%, transparent) 0%, transparent 70%),
+    radial-gradient(35% 55% at 70% 40%, color-mix(in oklab, var(--marron-claro) 90%, transparent) 0%, transparent 70%);
+  filter: blur(30px);
+}
+@utility pildora {
+  display: inline-flex; align-items: center; min-height: 1.75rem; padding: 0 .75rem; border-radius: 999px;
+  background: var(--color-card); box-shadow: var(--shadow-tarjeta); font-size: .8125rem; font-weight: 600; color: var(--color-muted-foreground);
+}
+@utility tarjeta-opcion {
+  display: flex; align-items: center; gap: 1rem; width: 100%; text-align: left;
+  background: var(--color-card); border-radius: 16px; box-shadow: var(--shadow-tarjeta); padding: 1rem 1.25rem; min-height: 5rem;
+  border: 2px solid transparent; transition: border-color .15s, transform .1s;
+  &:active { transform: scale(0.99); }
+  &[aria-pressed="true"] { border-color: var(--color-primary); }
+}
+@utility boton-figura {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .125rem;
+  min-height: 64px; padding: .5rem; border-radius: 12px; background: var(--color-card); border: 2px solid var(--color-marron-claro);
+  transition: border-color .15s, opacity .15s;
+  &[aria-pressed="false"] { opacity: .5; }
+  &[aria-pressed="true"] { border-color: var(--color-primary); }
 }

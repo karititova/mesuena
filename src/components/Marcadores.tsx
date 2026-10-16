@@ -43,8 +43,8 @@ export function Marcadores(props: {
                 <div key={k} className="relative flex h-12 items-center" style={{ gridColumn: `span ${b.pulsos}` }}>
                   {enCurso && !silencio && (
                     <span
-                      className="absolute left-[calc(50%/var(--n))] h-4 rounded-full bg-primary transition-[width] duration-150"
-                      style={{ ["--n" as string]: b.pulsos, width: `calc(${(llenos - 1) / b.pulsos} * 100% + 1rem)`, transform: "translateX(-0.5rem)" }}
+                      className="absolute h-4 rounded-full bg-primary transition-[width] duration-150"
+                      style={{ left: `calc(${50 / b.pulsos}% - 0.5rem)`, width: `calc(${((llenos - 1) * 100) / b.pulsos}% + 1rem)` }}
                     />
                   )}
                   {Array.from({ length: b.pulsos }, (_, i) => {
