@@ -37,13 +37,17 @@ export function generarRitmo(
   nivel: Nivel,
   numCompases: number,
   azar: () => number = Math.random,
+  permitidas?: string[],
 ): string[] {
-  const disponibles = figurasDisponibles(c.tipo, nivel);
+  const todas = figurasDisponibles(c.tipo, nivel);
+  const filtradas = permitidas ? todas.filter((f) => permitidas.includes(f.id)) : todas;
+  const disponibles = filtradas.some((f) => f.pulsos === 1) ? filtradas : todas;
   const res: string[] = [];
 
   for (let m = 0; m < numCompases; m++) {
-    for (let intento = 0; intento < 500; intento++) {
-      const compasActual = generarCompas(c, nivel, disponibles, res, m === 0, azar);
+    // Primero con todas las reglas; si la selección del alumno lo impide, se relajan las de nivel 2.
+    for (let intento = 0; intento < 700; intento++) {
+      const compasActual = generarCompas(c, nivel, disponibles, res, m === 0, azar, intento < 500);
       if (compasActual) {
         res.push(...compasActual);
         break;
@@ -60,6 +64,7 @@ function generarCompas(
   previo: string[],
   esPrimero: boolean,
   azar: () => number,
+  estricto = true,
 ): string[] | null {
   const out: Figura[] = [];
   let usados = 0;
@@ -76,7 +81,7 @@ function generarCompas(
       if (repetido && f.id === ultimo) return false;
       if (esSilencio(f)) {
         if (esPrimero && usados === 0) return false;
-        if (nivel === 1 && silencios >= 1) return false;
+        if (nivel === 1 && silencios >= 1 && estricto) return false;
         if (soloSilencios && f.pulsos === restantes) return false;
       }
       return true;
@@ -86,7 +91,7 @@ function generarCompas(
     const pesos = candidatos.map((f) => {
       let p = f.nivel === nivel ? 3 : 1; // favorece las nuevas del nivel
       if (esSilencio(f)) p *= 0.5;
-      if (f.pulsos >= 3) p *= 0.5;
+      if (f.pulsos >= 2) p *= 0.35; // las largas salen menos que las de un pulso
       return p;
     });
     const total = pesos.reduce((a, b) => a + b, 0);
@@ -105,6 +110,6 @@ function generarCompas(
   }
   if (out.every((f) => esSilencio(f))) return null;
   const ids = out.map((f) => f.id);
-  if (nivel === 2 && !cumpleNivel2(ids, previo)) return null;
+  if (estricto && nivel === 2 && !cumpleNivel2(ids, previo)) return null;
   return ids;
 }
