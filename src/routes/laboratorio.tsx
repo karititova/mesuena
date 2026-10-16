@@ -24,6 +24,7 @@ export const Route = createFileRoute("/laboratorio")({
 });
 
 const AVISO_KEY = "me-suena-aviso-silencio";
+const AVISO_DURACION_KEY = "me-suena-aviso-duracion";
 
 function Laboratorio() {
   const [compasId, setCompasId] = useState("2/4");
@@ -38,6 +39,14 @@ function Laboratorio() {
   const [resultado, setResultado] = useState<ResultadoPulso[] | null>(null);
   const [sonando, setSonando] = useState<null | "ritmo" | "respuesta">(null);
   const [aviso, setAviso] = useState(false);
+  const [avisoDuracion, setAvisoDuracion] = useState(false);
+
+  useEffect(() => {
+    if (!localStorage.getItem(AVISO_DURACION_KEY)) {
+      localStorage.setItem(AVISO_DURACION_KEY, "1");
+      setAvisoDuracion(true);
+    }
+  }, []);
 
   const c = getCompas(compasId);
   const paleta = figurasDisponibles(c.tipo, nivel);
@@ -93,7 +102,8 @@ function Laboratorio() {
       : "fallo";
 
   // Durante la entrada se encienden los puntos del primer compás; luego siguen el pulso en curso.
-  const marca = pulso === null ? null : pulso < 0 ? pulso + c.pulsos : pulso;
+  const marca = pulso === null ? null : pulso < 0 ? pulso + c.pulsos : null;
+  const progreso = pulso !== null && pulso >= 0 ? pulso : null;
 
   const cambiarRespuesta = (r: string[]) => {
     setRespuesta(r);
@@ -109,7 +119,14 @@ function Laboratorio() {
           </Link>
           <h1 className="font-display text-[36px] leading-tight font-bold text-foreground">Laboratorio</h1>
         </div>
-        <Baldo estado="neutro" className="size-20" />
+        <div className="flex items-center gap-2">
+          {avisoDuracion && (
+            <p role="status" className="max-w-[16rem] text-right text-xs text-muted-foreground">
+              Las notas largas se ven: la barra se estira. El silencio queda vacío
+            </p>
+          )}
+          <Baldo estado="neutro" className="size-20 shrink-0" />
+        </div>
       </header>
 
       <section className="tarjeta space-y-4">
@@ -148,6 +165,7 @@ function Laboratorio() {
             numCompases={numCompases}
             silabas={silabas}
             pulsoActivo={sonando === "ritmo" ? marca : null}
+            progreso={sonando === "ritmo" ? progreso : null}
             etiqueta="Partitura del ritmo"
           />
         )}
@@ -178,7 +196,7 @@ function Laboratorio() {
             {pulsosRespuesta}/{totalPulsos}
           </span>
         </div>
-        <Partitura compas={c} ids={respuesta} numCompases={numCompases} silabas={silabas} estados={estados} pulsoActivo={sonando === "respuesta" ? marca : null} etiqueta="Partitura de tu respuesta" />
+        <Partitura compas={c} ids={respuesta} numCompases={numCompases} silabas={silabas} estados={estados} pulsoActivo={sonando === "respuesta" ? marca : null} progreso={sonando === "respuesta" ? progreso : null} etiqueta="Partitura de tu respuesta" />
 
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {paleta.map((f) => {
@@ -231,7 +249,9 @@ function Laboratorio() {
               <li key={r.pulso} className={r.correcto ? "pulso pulso-ok" : "pulso pulso-fallo"}>
                 <span className="font-semibold">Pulso {r.pulso + 1}</span>
                 <span className="text-right">
-                  {r.correcto ? (
+                  {r.equivalencia ? (
+                    <>Suena igual: aquí iba {figura(r.esperado.figuraId).nombre.toLowerCase()}</>
+                  ) : r.correcto ? (
                     describir(r.esperado)
                   ) : (
                     <>

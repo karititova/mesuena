@@ -5,7 +5,7 @@ import type { Compas } from "@/musica/compases";
 
 type ToneT = typeof ToneNS;
 let Tone: ToneT | null = null;
-let ritmoSynth: ToneNS.Synth | null = null;
+let ritmoSynth: ToneNS.MembraneSynth | null = null;
 let metroSynth: ToneNS.MembraneSynth | null = null;
 let parte: ToneNS.Part | null = null;
 
@@ -15,16 +15,14 @@ export const HUECO = 0.04;
 export const VEL_PULSO = 1;
 export const VEL_NOTA = Math.pow(10, -2.5 / 20);
 
-/**
- * Voz del ritmo: percusión afinada tipo marimba/piano suave.
- * Ataque redondo y corto, resonancia que se apaga sola (sustain bajo).
- */
+/** Voz del ritmo: MembraneSynth agudo tipo bloque de madera, golpe corto, mismo timbre en todas las notas. */
 export const RITMO_VOZ = {
-  nota: "G3", // Sol3 = 196 Hz. Nunca más grave: en el altavoz del móvil dejaría de oírse.
-  oscilan: "triangle" as const,
-  filtroHz: 900,
-  envolvente: { attack: 0.008, decay: 1.2, sustain: 0.15, release: 0.06 },
-  volumen: -8,
+  nota: "A5",
+  golpe: 0.05,
+  pitchDecay: 0.006,
+  octaves: 1.5,
+  envolvente: { attack: 0.001, decay: 0.07, sustain: 0, release: 0.02 },
+  volumen: -4,
 };
 
 /** Debe llamarse desde un gesto del usuario (iPhone). Devuelve false si no hay audioSession. */
@@ -42,12 +40,11 @@ export async function iniciarAudio(): Promise<{ audioSession: boolean }> {
   }
   await Tone.start();
   if (!ritmoSynth) {
-    const reverb = new Tone.Reverb({ decay: 0.8, wet: 0.2 }).toDestination();
-    const filtro = new Tone.Filter(RITMO_VOZ.filtroHz, "lowpass").connect(reverb);
-    ritmoSynth = new Tone.Synth({
-      oscillator: { type: RITMO_VOZ.oscilan },
+    ritmoSynth = new Tone.MembraneSynth({
+      pitchDecay: RITMO_VOZ.pitchDecay,
+      octaves: RITMO_VOZ.octaves,
       envelope: RITMO_VOZ.envolvente,
-    }).connect(filtro);
+    }).toDestination();
     ritmoSynth.volume.value = RITMO_VOZ.volumen;
     metroSynth = new Tone.MembraneSynth({
       pitchDecay: 0.01,
@@ -67,7 +64,6 @@ export function parar() {
   t.position = 0;
   parte?.dispose();
   parte = null;
-  ritmoSynth?.triggerRelease();
 }
 
 export interface Evento {
@@ -139,7 +135,7 @@ export async function reproducir(
   const T = Tone;
   const { eventos, fin } = eventosDe(c, ids, ppm, numCompases, conPulso);
   parte = new T.Part<Evento>((time, ev) => {
-    if (ev.tipo === "ritmo") ritmoSynth!.triggerAttackRelease(RITMO_VOZ.nota, ev.dur!, time, ev.vel);
+    if (ev.tipo === "ritmo") ritmoSynth!.triggerAttackRelease(RITMO_VOZ.nota, RITMO_VOZ.golpe, time, ev.vel);
     else {
       if (ev.vel > 0) metroSynth!.triggerAttackRelease(ev.fuerte ? "E2" : "C2", 0.04, time, ev.vel);
       if (alPulso && ev.pulso !== undefined) {

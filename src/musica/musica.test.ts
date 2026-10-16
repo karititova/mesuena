@@ -74,6 +74,18 @@ describe("generarRitmo", () => {
 });
 
 describe("comprobar", () => {
+  it("silencio en lugar de continuación de blanca suena igual y se marca como equivalencia", () => {
+    const r = comprobar(["negra", "silencio_negra"], ["blanca"]);
+    expect(r[1]!.correcto).toBe(true);
+    expect(r[1]!.equivalencia).toBe(true);
+    expect(r[0]!.equivalencia).toBe(false);
+  });
+  it("continuación en lugar de silencio también suena igual", () => {
+    const r = comprobar(["blanca"], ["negra", "silencio_negra"]);
+    expect(r[0]!.correcto).toBe(false);
+    expect(r[1]!.correcto).toBe(true);
+    expect(r[1]!.equivalencia).toBe(true);
+  });
   it("expande una blanca en ataque + continuación", () => {
     expect(expandirPulsos(["blanca"]).map((p) => p.tipo)).toEqual(["ataque", "continuacion"]);
   });
@@ -118,11 +130,11 @@ describe("sonido del ritmo", () => {
     expect(m.filter((e) => (e.pulso ?? 0) < 0).every((e) => e.vel > 0)).toBe(true);
     expect(m.filter((e) => (e.pulso ?? 0) >= 0).every((e) => e.vel === 0)).toBe(true);
   });
-  it("es percusión afinada grave y cálida: Sol3, triángulo, envolvente dictada", () => {
-    expect(RITMO_VOZ.nota).toBe("G3"); // Sol3 = 196 Hz, suelo absoluto del timbre
-    expect(RITMO_VOZ.oscilan).toBe("triangle");
-    expect(RITMO_VOZ.filtroHz).toBe(900);
-    expect(RITMO_VOZ.envolvente).toEqual({ attack: 0.008, decay: 1.2, sustain: 0.15, release: 0.06 });
-    expect(RITMO_VOZ.volumen).toBe(-8);
+  it("el ritmo vuelve al bloque de madera: MembraneSynth agudo y golpe corto", () => {
+    expect(RITMO_VOZ.nota).toBe("A5");
+    expect(RITMO_VOZ.envolvente.sustain).toBe(0);
+  });
+  it("la primera nota de cada pulso suena 2,5 dB más fuerte", () => {
+    expect(20 * Math.log10(VEL_PULSO / VEL_NOTA)).toBeCloseTo(2.5, 5);
   });
 });

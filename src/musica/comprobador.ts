@@ -23,6 +23,16 @@ export interface ResultadoPulso {
   correcto: boolean;
   esperado: Pulso;
   respuesta: Pulso | null;
+  /** Correcto por sonar igual (continuación ↔ silencio), no acierto exacto. */
+  equivalencia: boolean;
+}
+
+const esSilencio = (p: Pulso) => figura(p.figuraId).duraciones.every((d) => d.silencio);
+/** Una continuación de nota larga y un silencio suenan igual en ese pulso (nada nuevo suena). */
+function suenaIgual(a: Pulso, b: Pulso) {
+  const callaA = a.tipo === "continuacion" || esSilencio(a);
+  const callaB = b.tipo === "continuacion" || esSilencio(b);
+  return callaA && callaB && (a.tipo === "continuacion") !== (b.tipo === "continuacion");
 }
 
 export function comprobar(respuesta: string[], correcta: string[]): ResultadoPulso[] {
@@ -30,11 +40,8 @@ export function comprobar(respuesta: string[], correcta: string[]): ResultadoPul
   const c = expandirPulsos(correcta);
   return c.map((esperado, i) => {
     const dado = r[i] ?? null;
-    return {
-      pulso: i,
-      esperado,
-      respuesta: dado,
-      correcto: !!dado && dado.figuraId === esperado.figuraId && dado.indice === esperado.indice,
-    };
+    const exacto = !!dado && dado.figuraId === esperado.figuraId && dado.indice === esperado.indice;
+    const equivalencia = !exacto && !!dado && suenaIgual(esperado, dado);
+    return { pulso: i, esperado, respuesta: dado, correcto: exacto || equivalencia, equivalencia };
   });
 }
