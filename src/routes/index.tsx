@@ -1,13 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Baldo } from "@/components/Baldo";
+import { Pantalla } from "@/components/Cabecera";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Me suena · Aprende ritmo musical" },
-      { name: "description", content: "Aprende a leer y sentir el ritmo, en clase y practicando a tu ritmo." },
+      { name: "description", content: "Ritmo musical para adultos que empiezan: escucha, lee y monta cada compás pulso a pulso." },
       { property: "og:title", content: "Me suena · Aprende ritmo musical" },
-      { property: "og:description", content: "Aprende a leer y sentir el ritmo, en clase y practicando a tu ritmo." },
+      { property: "og:description", content: "Ritmo musical para adultos que empiezan: escucha, lee y monta cada compás pulso a pulso." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -17,13 +17,30 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   return (
-    <main className="mx-auto flex min-h-screen max-w-xl flex-col items-center justify-center gap-6 px-6 text-center">
-      <Baldo estado="neutro" />
-      <h1 className="font-display text-6xl font-bold text-foreground">Me suena</h1>
-      <p className="text-lg text-muted-foreground">Ritmo musical para adultos que empiezan: escucha, lee y monta cada compás pulso a pulso.</p>
-      <Link to="/laboratorio" className="boton boton-primario px-8">
-        Entrar al laboratorio
-      </Link>
-    </main>
+    <Pantalla>
+      <header className="relative pb-4 pt-16">
+        <div className="cabecera-halo pointer-events-none absolute -inset-x-24 top-0 h-72" aria-hidden />
+        <div className="relative space-y-3">
+          <h1 className="font-display text-[56px] leading-none font-bold text-foreground">Me suena</h1>
+          <p className="text-lg text-muted-foreground">Escucha, lee y monta el ritmo pulso a pulso.</p>
+        </div>
+      </header>
+      <div className="space-y-3">
+        <Link to="/practicar" className="tarjeta-opcion min-h-28">
+          <div>
+            <p className="font-display text-[26px] font-bold">Practicar</p>
+            <p className="text-sm text-muted-foreground">Tandas cortas a tu ritmo.</p>
+          </div>
+          <span className="ml-auto text-2xl text-muted-foreground" aria-hidden>→</span>
+        </Link>
+        <Link to="/clase" className="tarjeta-opcion min-h-28">
+          <div>
+            <p className="font-display text-[26px] font-bold">Entrar a una clase</p>
+            <p className="text-sm text-muted-foreground">Con el código de tu profesor.</p>
+          </div>
+          <span className="ml-auto text-2xl text-muted-foreground" aria-hidden>→</span>
+        </Link>
+      </div>
+    </Pantalla>
   );
 }
