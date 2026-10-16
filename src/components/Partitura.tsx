@@ -5,7 +5,7 @@ import type { EstadoPulso } from "@/musica/partitura";
 function leerColores() {
   const cs = getComputedStyle(document.documentElement);
   const v = (n: string) => cs.getPropertyValue(n).trim();
-  return { tinta: v("--foreground"), secundario: v("--muted-foreground"), ok: v("--acierto"), curso: v("--primary"), fallo: v("--destructive"), vacio: v("--marron-claro") };
+  return { tinta: v("--foreground"), secundario: v("--muted-foreground"), ok: v("--acierto"), curso: v("--primary"), fallo: v("--destructive"), vacio: v("--marron-claro"), seleccion: v("--primario-claro") };
 }
 
 export function Partitura(props: {
@@ -17,9 +17,17 @@ export function Partitura(props: {
   etiqueta: string;
   pulsoActivo?: number | null;
   progreso?: number | null;
+  /** Respuesta compacta (máx. 110 px de alto). */
+  compacta?: boolean;
+  seleccionado?: number | null;
+  /** Con esta función cada pulso es una zona táctil (alto del pentagrama × ancho del pulso). */
+  onTocarPulso?: ((pulso: number) => void) | undefined;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const { compas, ids, numCompases, silabas, estados, pulsoActivo, progreso } = props;
+  const { compas, ids, numCompases, silabas, estados, pulsoActivo, progreso, seleccionado, compacta } = props;
+  const tocar = useRef(props.onTocarPulso);
+  tocar.current = props.onTocarPulso;
+  const tactil = !!props.onTocarPulso;
   const filas = useEstrecho();
   const dibujos = useRef(0);
   useEffect(() => {
@@ -28,7 +36,17 @@ export function Partitura(props: {
     import("@/musica/partitura").then(({ dibujarPartitura }) => {
       if (!vivo || turno !== dibujos.current || !ref.current) return;
       try {
-        dibujarPartitura(ref.current, { compas, ids, numCompases, silabas, estados, filas, pulsoActivo, progreso, colores: leerColores() });
+        const zonas = dibujarPartitura(ref.current, { compas, ids, numCompases, silabas, estados, filas: filas && !compacta, pulsoActivo, progreso, seleccionado, colores: leerColores() });
+        const svg = ref.current.querySelector("svg");
+        if (tactil && svg) {
+          for (const z of zonas) {
+            const r = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+            Object.entries({ x: z.x, y: z.y, width: z.w, height: z.h, fill: "transparent", role: "button", "aria-label": `Pulso ${z.pulso + 1}` }).forEach(([k, v]) => r.setAttribute(k, String(v)));
+            r.style.cursor = "pointer";
+            r.addEventListener("click", () => tocar.current?.(z.pulso));
+            svg.appendChild(r);
+          }
+        }
       } catch (e) {
         console.error("Error dibujando partitura", e);
       }
@@ -36,11 +54,11 @@ export function Partitura(props: {
     return () => {
       vivo = false;
     };
-  }, [compas, ids, numCompases, silabas, estados, filas, pulsoActivo, progreso]);
-  return <div ref={ref} role="img" aria-label={props.etiqueta} className="partitura-caja w-full min-h-24" />;
+  }, [compas, ids, numCompases, silabas, estados, filas, pulsoActivo, progreso, seleccionado, compacta, tactil]);
+  return <div ref={ref} role="img" aria-label={props.etiqueta} className={compacta ? "partitura-caja partitura-compacta w-full" : "partitura-caja w-full min-h-24"} />;
 }
 
-export function MiniFigura({ id, compas, desactivada }: { id: string; compas: Compas; desactivada?: boolean }) {
+export function MiniFigura({ id, compas, desactivada, pequeña }: { id: string; compas: Compas; desactivada?: boolean; pequeña?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     import("@/musica/partitura").then(({ dibujarMiniFigura }) => {
@@ -49,7 +67,7 @@ export function MiniFigura({ id, compas, desactivada }: { id: string; compas: Co
       dibujarMiniFigura(ref.current, id, compas, desactivada ? c.secundario : c.tinta);
     });
   }, [id, compas, desactivada]);
-  return <div ref={ref} aria-hidden className="w-24" />;
+  return <div ref={ref} aria-hidden className={pequeña ? "w-14" : "w-24"} />;
 }
 
 /** true en pantallas de menos de 600 px (móvil vertical); se actualiza al girar. */
