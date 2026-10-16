@@ -1,5 +1,30 @@
 import type { Compas } from "./compases";
-import { esSilencio, figurasDisponibles, type Figura, type Nivel } from "./figuras";
+import { esSilencio, figura, figurasDisponibles, type Figura, type Nivel } from "./figuras";
+
+export const tieneSemis = (id: string) => figura(id).duraciones.some((d) => d.unidades === 1);
+/** Negra (o negra con puntillo), figura de 2+ pulsos o silencio: da respiro al compás. */
+export const esApoyo = (id: string) => {
+  const f = figura(id);
+  return esSilencio(f) || f.pulsos >= 2 || f.duraciones.length === 1;
+};
+
+/**
+ * Reglas extra de nivel 2 para un compás: máx. la mitad de sus pulsos con figuras de nivel 2,
+ * nunca más de dos pulsos seguidos con semicorcheas (contando el compás anterior)
+ * y al menos una negra, figura larga o silencio.
+ */
+export function cumpleNivel2(ids: string[], previo: string[] = []): boolean {
+  const pulsos = ids.reduce((a, id) => a + figura(id).pulsos, 0);
+  const n2 = ids.filter((id) => figura(id).nivel === 2).reduce((a, id) => a + figura(id).pulsos, 0);
+  if (n2 > pulsos / 2) return false;
+  if (!ids.some(esApoyo)) return false;
+  let seguidos = 0;
+  for (const id of [...previo, ...ids]) {
+    seguidos = tieneSemis(id) ? seguidos + 1 : 0;
+    if (seguidos > 2) return false;
+  }
+  return true;
+}
 
 /**
  * Genera una secuencia válida de ids de figura.
@@ -17,7 +42,7 @@ export function generarRitmo(
   const res: string[] = [];
 
   for (let m = 0; m < numCompases; m++) {
-    for (let intento = 0; intento < 50; intento++) {
+    for (let intento = 0; intento < 500; intento++) {
       const compasActual = generarCompas(c, nivel, disponibles, res, m === 0, azar);
       if (compasActual) {
         res.push(...compasActual);
@@ -79,5 +104,7 @@ function generarCompas(
     if (esSilencio(elegido)) silencios++;
   }
   if (out.every((f) => esSilencio(f))) return null;
-  return out.map((f) => f.id);
+  const ids = out.map((f) => f.id);
+  if (nivel === 2 && !cumpleNivel2(ids, previo)) return null;
+  return ids;
 }
