@@ -55,20 +55,21 @@ interface Evento {
   tipo: "ritmo" | "metro";
   vel: number;
   fuerte?: boolean;
+  /** Pulso relativo al inicio del ritmo (negativo durante la entrada). */
+  pulso?: number;
 }
 
 export function eventosDe(c: Compas, ids: string[], ppm: number, numCompases: number): { eventos: Evento[]; fin: number } {
   const segPulso = 60 / ppm;
   const segUnidad = segPulso / c.unidadesPulso;
-  const compasesEntrada = c.pulsos === 2 ? 2 : 1;
-  const pulsosEntrada = compasesEntrada * c.pulsos;
+  const pulsosEntrada = c.pulsos; // siempre 1 compás de entrada
   const offset = pulsosEntrada * segPulso;
   const eventos: Evento[] = [];
   const totalPulsos = pulsosEntrada + numCompases * c.pulsos;
   for (let p = 0; p < totalPulsos; p++) {
     const enEntrada = p < pulsosEntrada;
     const fuerte = p % c.pulsos === 0;
-    eventos.push({ time: p * segPulso, tipo: "metro", fuerte, vel: enEntrada ? (fuerte ? 1 : 0.6) : fuerte ? 0.35 : 0.2 });
+    eventos.push({ time: p * segPulso, tipo: "metro", fuerte, vel: enEntrada ? (fuerte ? 1 : 0.6) : fuerte ? 0.35 : 0.2, pulso: p - pulsosEntrada });
   }
   let u = 0;
   for (const id of ids) {
@@ -86,6 +87,7 @@ export async function reproducir(
   ppm: number,
   numCompases: number,
   alTerminar?: () => void,
+  alPulso?: (pulso: number) => void,
 ) {
   await iniciarAudio();
   if (!Tone) return;
@@ -94,7 +96,13 @@ export async function reproducir(
   const { eventos, fin } = eventosDe(c, ids, ppm, numCompases);
   parte = new T.Part<Evento>((time, ev) => {
     if (ev.tipo === "ritmo") ritmoSynth!.triggerAttackRelease("A5", 0.05, time, ev.vel);
-    else metroSynth!.triggerAttackRelease(ev.fuerte ? "E3" : "C3", 0.04, time, ev.vel);
+    else {
+      metroSynth!.triggerAttackRelease(ev.fuerte ? "E3" : "C3", 0.04, time, ev.vel);
+      if (alPulso && ev.pulso !== undefined) {
+        const p = ev.pulso;
+        T.getDraw().schedule(() => alPulso(p), time);
+      }
+    }
   }, eventos);
   parte.start(0);
   const transport = T.getTransport();
