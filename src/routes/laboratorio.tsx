@@ -30,7 +30,8 @@ function Laboratorio() {
   const [nivel, setNivel] = useState<Nivel>(1);
   const [numCompases, setNumCompases] = useState(1);
   const [ppm, setPpm] = useState<number>(60);
-  const [silabas, setSilabas] = useState(true);
+  const [silabas, setSilabas] = useState(false);
+  const [pulso, setPulso] = useState<number | null>(null);
   const [ritmo, setRitmo] = useState<string[]>([]);
   const [respuesta, setRespuesta] = useState<string[]>([]);
   const [resultado, setResultado] = useState<ResultadoPulso[] | null>(null);
@@ -59,12 +60,24 @@ function Laboratorio() {
       setAviso(true);
     }
     setSonando(cual);
-    await reproducir(c, cual === "ritmo" ? ritmo : respuesta, ppm, numCompases, () => setSonando(null));
+    setPulso(null);
+    await reproducir(
+      c,
+      cual === "ritmo" ? ritmo : respuesta,
+      ppm,
+      numCompases,
+      () => {
+        setSonando(null);
+        setPulso(null);
+      },
+      setPulso,
+    );
   };
 
   const detener = () => {
     parar();
     setSonando(null);
+    setPulso(null);
   };
 
   const estados = useMemo(() => resultado?.map((r) => (r.correcto ? ("ok" as const) : ("fallo" as const))), [resultado]);
@@ -76,6 +89,9 @@ function Laboratorio() {
     : aciertos === resultado.length
       ? "acierto"
       : "fallo";
+
+  // Durante la entrada se encienden los puntos del primer compás; luego siguen el pulso en curso.
+  const marca = pulso === null ? null : pulso < 0 ? pulso + c.pulsos : pulso;
 
   const cambiarRespuesta = (r: string[]) => {
     setRespuesta(r);
@@ -89,7 +105,7 @@ function Laboratorio() {
           <Link to="/" className="text-sm font-medium text-muted-foreground hover:text-foreground">
             ← Me suena
           </Link>
-          <h1 className="font-display text-3xl font-semibold text-foreground">Laboratorio</h1>
+          <h1 className="font-display text-[40px] leading-tight font-bold text-foreground">Laboratorio</h1>
         </div>
         <Baldo estado={baldo} className="size-20" />
       </header>
@@ -117,13 +133,23 @@ function Laboratorio() {
 
       <section className="tarjeta space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-xl font-semibold">Ritmo</h2>
+          <h2 className="font-display text-[32px] leading-none font-bold">Ritmo</h2>
           <label className="flex min-h-11 items-center gap-2 text-sm text-muted-foreground">
             <input type="checkbox" checked={silabas} onChange={(e) => setSilabas(e.target.checked)} className="size-5 accent-primary" />
             Sílabas
           </label>
         </div>
-        {ritmo.length > 0 && <Partitura compas={c} ids={ritmo} numCompases={numCompases} silabas={silabas} etiqueta="Partitura del ritmo" />}
+        {ritmo.length > 0 && (
+          <Partitura
+            compas={c}
+            ids={ritmo}
+            numCompases={numCompases}
+            silabas={silabas || resultado !== null}
+            pulsoActivo={sonando === "ritmo" ? marca : null}
+            etiqueta="Partitura del ritmo"
+          />
+        )}
+        <Entrada c={c} pulso={sonando ? pulso : null} />
         <div className="grid grid-cols-2 gap-3">
           <button type="button" onClick={() => tocar("ritmo")} disabled={sonando !== null} className="boton boton-primario">
             ▶ Reproducir
@@ -136,12 +162,12 @@ function Laboratorio() {
 
       <section className="tarjeta space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-xl font-semibold">Tu respuesta</h2>
-          <span className="font-display text-lg text-muted-foreground">
+          <h2 className="font-display text-[32px] leading-none font-bold">Tu respuesta</h2>
+          <span className="text-lg font-bold text-muted-foreground">
             {pulsosRespuesta}/{totalPulsos}
           </span>
         </div>
-        <Partitura compas={c} ids={respuesta} numCompases={numCompases} silabas={silabas} estados={estados} etiqueta="Partitura de tu respuesta" />
+        <Partitura compas={c} ids={respuesta} numCompases={numCompases} silabas estados={estados} pulsoActivo={sonando === "respuesta" ? marca : null} etiqueta="Partitura de tu respuesta" />
 
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {paleta.map((f) => {
@@ -183,7 +209,7 @@ function Laboratorio() {
           <div className="flex items-center gap-4">
             <Baldo estado={baldo} className="size-24" />
             <div>
-              <p className="font-display text-4xl font-semibold">
+              <p className="text-4xl font-bold">
                 {aciertos}/{resultado.length}
               </p>
               <p className="text-sm text-muted-foreground">{aciertos === resultado.length ? "¡Todos los pulsos bien!" : "Revisa los pulsos marcados."}</p>
@@ -192,7 +218,7 @@ function Laboratorio() {
           <ol className="space-y-1.5">
             {resultado.map((r) => (
               <li key={r.pulso} className={r.correcto ? "pulso pulso-ok" : "pulso pulso-fallo"}>
-                <span className="font-display font-semibold">Pulso {r.pulso + 1}</span>
+                <span className="font-semibold">Pulso {r.pulso + 1}</span>
                 <span className="text-right">
                   {r.correcto ? (
                     describir(r.esperado)
@@ -214,4 +240,24 @@ function Laboratorio() {
 function describir(p: { figuraId: string; indice: number }) {
   const n = figura(p.figuraId).nombre.toLowerCase();
   return p.indice === 0 ? n : `${n} (continuación)`;
+}
+
+function Entrada({ c, pulso }: { c: { pulsos: number }; pulso: number | null }) {
+  const enEntrada = pulso !== null && pulso < 0;
+  const actual = enEntrada ? pulso + c.pulsos : -1;
+  return (
+    <div className="flex min-h-9 items-center justify-between gap-3 text-sm text-muted-foreground" aria-live="polite">
+      <span>{pulso !== null && !enEntrada ? "Ahora el ritmo" : "Entrada: 1 compás de clic y después el ritmo"}</span>
+      {enEntrada && (
+        <span className="text-xl font-bold tabular-nums">
+          {Array.from({ length: c.pulsos }, (_, i) => (
+            <span key={i} className={i === actual ? "text-foreground" : "text-muted-foreground/40"}>
+              {i > 0 && " · "}
+              {i + 1}
+            </span>
+          ))}
+        </span>
+      )}
+    </div>
+  );
 }

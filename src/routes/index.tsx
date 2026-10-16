@@ -18,8 +18,8 @@ export const Route = createFileRoute("/")({
 function Index() {
   return (
     <main className="mx-auto flex min-h-screen max-w-xl flex-col items-center justify-center gap-6 px-6 text-center">
-      <Baldo estado="neutro" className="size-40" />
-      <h1 className="font-display text-5xl font-semibold text-foreground">Me suena</h1>
+      <Baldo estado="neutro" />
+      <h1 className="font-display text-6xl font-bold text-foreground">Me suena</h1>
       <p className="text-lg text-muted-foreground">Ritmo musical para adultos que empiezan: escucha, lee y monta cada compás pulso a pulso.</p>
       <Link to="/laboratorio" className="boton boton-primario px-8">
         Entrar al laboratorio
