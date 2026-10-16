@@ -15,6 +15,18 @@ export const HUECO = 0.04;
 export const VEL_PULSO = 1;
 export const VEL_NOTA = Math.pow(10, -2.5 / 20);
 
+/**
+ * Voz del ritmo: percusión afinada tipo marimba/piano suave.
+ * Ataque redondo y corto, resonancia que se apaga sola (sustain bajo).
+ */
+export const RITMO_VOZ = {
+  nota: "A4", // La4 = 440 Hz
+  oscilan: "triangle" as const,
+  filtroHz: 1800,
+  envolvente: { attack: 0.005, decay: 1.2, sustain: 0.15, release: 0.06 },
+  volumen: -8,
+};
+
 /** Debe llamarse desde un gesto del usuario (iPhone). Devuelve false si no hay audioSession. */
 export async function iniciarAudio(): Promise<{ audioSession: boolean }> {
   if (!Tone) Tone = await import("tone");
