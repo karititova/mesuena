@@ -174,6 +174,26 @@ function MapaPulsos({ pcts, c }: { pcts: number[]; c: Compas }) {
   );
 }
 
+/** «¿Cuál suena?» al revelar: cuál era la correcta y cuántos alumnos eligieron cada opción. */
+function RecuentoOpciones({ ej, rs }: { ej: Ejercicio; rs: FilaRespuesta[] }) {
+  const cuentas = (ej.opciones ?? []).map((_, i) => rs.filter((r) => r.entrada.tipo === "cual" && r.entrada.elegida === i).length);
+  return (
+    <div className="space-y-3">
+      <p className="text-2xl font-semibold">Era la opción {(ej.correcta ?? 0) + 1}</p>
+      <ul className="flex flex-wrap gap-3">
+        {cuentas.map((n, i) => {
+          const ok = i === ej.correcta;
+          return (
+            <li key={i} className={`rounded-[16px] border-2 px-6 py-3 text-xl font-semibold ${ok ? "border-acierto bg-verde-claro" : "border-destructive bg-error-claro"}`}>
+              Opción {i + 1}: {n} {n === 1 ? "alumno" : "alumnos"}
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
 function Revelada({ d, c, onSeguir, ocupado }: { d: Datos; c: Compas; onSeguir: () => void; ocupado: boolean }) {
   const p = actualDe(d);
   const rs = d.respuestas.filter((r) => r.pregunta_id === p.id) as FilaRespuesta[];
