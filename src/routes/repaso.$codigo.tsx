@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { Baldo } from "@/components/Baldo";
 import { Cabecera, Pantalla } from "@/components/Cabecera";
+import { ComparacionError, pulsoDiferente } from "@/components/ComparacionError";
 import { Partitura } from "@/components/Partitura";
 import { useReproductor } from "@/components/Reproduccion";
 import { compas as getCompas, type Compas } from "@/musica/compases";
@@ -113,8 +114,14 @@ function Detalle({ p, c, ppm, n, codigo, dispositivo }: { p: PreguntaRepaso; c: 
   const estados = cor.aciertos.map((ok) => (ok ? null : ("fallo" as const)));
   return (
     <div className="space-y-3 px-4 pb-4">
-      <Partitura compas={c} ids={cor.respuesta} numCompases={n} silabas={false} estados={estados} etiqueta="Tu respuesta" compacta />
-      <Partitura compas={c} ids={cor.solucion} numCompases={n} silabas estados={estados} marca={r.marca} etiqueta="Solución" />
+      {p.cfg.ejercicio === "error" ? (
+        <ComparacionError compas={c} escrito={cor.respuesta} sonado={cor.solucion} pulso={pulsoDiferente(cor.respuesta, cor.solucion)} numCompases={n} compacta />
+      ) : (
+        <>
+          <Partitura compas={c} ids={cor.respuesta} numCompases={n} silabas={false} estados={estados} etiqueta="Tu respuesta" compacta />
+          <Partitura compas={c} ids={cor.solucion} numCompases={n} silabas estados={estados} marca={r.marca} etiqueta="Solución" />
+        </>
+      )}
       <button type="button" onClick={() => (r.sonando ? r.detener() : r.tocar("sol", cor.solucion))} className="boton boton-secundario px-5">
         {r.sonando ? "■ Parar" : "▶ Oír la solución"}
       </button>

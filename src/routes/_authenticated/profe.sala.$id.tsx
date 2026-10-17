@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useRef, useState } from "react";
 import { Baldo } from "@/components/Baldo";
+import { ComparacionError } from "@/components/ComparacionError";
 import { Partitura } from "@/components/Partitura";
 import { Contador, useReproductor } from "@/components/Reproduccion";
 import { compas as getCompas, type Compas } from "@/musica/compases";
@@ -173,6 +174,26 @@ function MapaPulsos({ pcts, c }: { pcts: number[]; c: Compas }) {
   );
 }
 
+/** «¿Cuál suena?» al revelar: cuál era la correcta y cuántos alumnos eligieron cada opción. */
+function RecuentoOpciones({ ej, rs }: { ej: Ejercicio; rs: FilaRespuesta[] }) {
+  const cuentas = (ej.opciones ?? []).map((_, i) => rs.filter((r) => r.entrada.tipo === "cual" && r.entrada.elegida === i).length);
+  return (
+    <div className="space-y-3">
+      <p className="text-2xl font-semibold">Era la opción {(ej.correcta ?? 0) + 1}</p>
+      <ul className="flex flex-wrap gap-3">
+        {cuentas.map((n, i) => {
+          const ok = i === ej.correcta;
+          return (
+            <li key={i} className={`rounded-[16px] border-2 px-6 py-3 text-xl font-semibold ${ok ? "border-acierto bg-verde-claro" : "border-destructive bg-error-claro"}`}>
+              Opción {i + 1}: {n} {n === 1 ? "alumno" : "alumnos"}
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
 function Revelada({ d, c, onSeguir, ocupado }: { d: Datos; c: Compas; onSeguir: () => void; ocupado: boolean }) {
   const p = actualDe(d);
   const rs = d.respuestas.filter((r) => r.pregunta_id === p.id) as FilaRespuesta[];
@@ -183,7 +204,12 @@ function Revelada({ d, c, onSeguir, ocupado }: { d: Datos; c: Compas; onSeguir: 
   return (
     <section className="space-y-8">
       <h1 className="font-display text-5xl font-bold">{tituloPregunta(d)}</h1>
-      <div className="tarjeta partitura-sala"><Partitura compas={c} ids={correcta} numCompases={d.sesion.num_compases} silabas etiqueta="Solución" /></div>
+      {p.ej.tipo === "cual" && <RecuentoOpciones ej={p.ej} rs={rs} />}
+      {p.ej.tipo === "error" ? (
+        <div className="tarjeta partitura-sala"><ComparacionError compas={c} escrito={p.ej.ritmo} sonado={p.ej.suena!} pulso={p.ej.errorPulso!} numCompases={d.sesion.num_compases} /></div>
+      ) : (
+        <div className="tarjeta partitura-sala"><Partitura compas={c} ids={correcta} numCompases={d.sesion.num_compases} silabas etiqueta="Solución" /></div>
+      )}
       <div className="space-y-3">
         <h2 className="text-2xl font-semibold">Fallos por pulso <span className="text-lg font-normal text-muted-foreground">· {rs.length} respuestas</span></h2>
         <MapaPulsos pcts={mapaPulsos(rs, total)} c={c} />

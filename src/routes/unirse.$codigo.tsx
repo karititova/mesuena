@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
 import { Baldo } from "@/components/Baldo";
 import { Cabecera, Pantalla } from "@/components/Cabecera";
+import { ComparacionError } from "@/components/ComparacionError";
 import { EjercicioVista } from "@/components/Ejercicios";
 import { Partitura } from "@/components/Partitura";
 import { ResultadoEjercicio } from "@/components/ResultadoEjercicio";
@@ -150,14 +151,19 @@ function PreguntaAlumno({ v, codigo, dispositivo, contexto, alEnviar }: { v: Vis
         <section className="tarjeta space-y-4">
           {v.correccion ? (
             <>
-              <Partitura
-                compas={c}
-                ids={v.correccion.respuesta}
-                numCompases={cfg.numCompases}
-                silabas={false}
-                estados={v.correccion.aciertos.map((ok) => (ok ? "ok" : "fallo"))}
-                etiqueta="Tu respuesta"
-              />
+              {ej.tipo === "cual" && <p className="text-sm font-medium">Era la {(ej.correcta ?? 0) + 1}.</p>}
+              {ej.tipo === "error" ? (
+                <ComparacionError compas={c} escrito={ej.ritmo} sonado={ej.suena!} pulso={ej.errorPulso!} numCompases={cfg.numCompases} compacta />
+              ) : (
+                <Partitura
+                  compas={c}
+                  ids={v.correccion.respuesta}
+                  numCompases={cfg.numCompases}
+                  silabas={false}
+                  estados={v.correccion.aciertos.map((ok) => (ok ? "ok" : "fallo"))}
+                  etiqueta="Tu respuesta"
+                />
+              )}
               <ResultadoEjercicio compas={c} numCompases={cfg.numCompases} ppm={cfg.ppm} correccion={v.correccion} />
             </>
           ) : (
