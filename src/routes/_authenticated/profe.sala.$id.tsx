@@ -247,25 +247,25 @@ function Terminada({ d }: { d: Datos }) {
 function useDemo(d: Datos | null, alResponder: () => void) {
   const responder = useServerFn(responderDemo);
   const programadas = useRef(new Set<string>());
+  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  useEffect(() => () => timers.current.forEach(clearTimeout), []);
   const preguntaId = d && d.sesion.estado === "pregunta" ? actualDe(d)?.id : null;
   useEffect(() => {
     if (!d || !preguntaId) return;
     const p = actualDe(d);
     const ej: Ejercicio = p.ej;
     const dificil = pulsoDificil(ej);
-    const timers: ReturnType<typeof setTimeout>[] = [];
     for (const al of d.participantes.filter((x) => x.demo)) {
       const clave = `${p.id}:${al.id}`;
       if (programadas.current.has(clave) || d.respuestas.some((r) => r.pregunta_id === p.id && r.participante_id === al.id)) continue;
       programadas.current.add(clave);
       const espera = 2000 + Math.random() * 8000;
-      timers.push(
+      timers.current.push(
         setTimeout(() => {
           responder({ data: { id: d.sesion.id, participanteId: al.id, tiempoMs: Math.round(espera), entrada: respuestaDemo(ej, dificil, d.sesion.figuras) } }).then(alResponder);
         }, espera),
       );
     }
-    return () => timers.forEach(clearTimeout);
     // Se reprograma al cambiar de pregunta o al entrar alumnos demo.
   }, [preguntaId, d?.participantes.length]); // eslint-disable-line react-hooks/exhaustive-deps
 }
