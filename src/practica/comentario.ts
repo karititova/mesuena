@@ -1,7 +1,6 @@
 // Comentario del resumen de la tanda, calculado por reglas (sin IA). Puro: sin DOM.
 import { expandirPulsos } from "@/musica/comprobador";
 import { figura } from "@/musica/figuras";
-import { TEMPOS } from "@/musica/compases";
 import type { Config, Correccion } from "./ejercicios";
 import { TEXTOS_RESUMEN as T } from "./textos-resumen";
 
@@ -58,25 +57,33 @@ export function posicionFallos(correcciones: Correccion[], pulsosCompas: number)
   return null;
 }
 
-/** Dos o tres frases a partir de los fallos de la tanda. */
-export function comentarioTanda(correcciones: Correccion[], cfg: Config, pulsosCompas: number): string[] {
-  const frases: string[] = [];
+/** Figuras de la solución en los pulsos fallados, de más a menos fallada. */
+function figurasFalladas(correcciones: Correccion[]): string[] {
+  const cuenta = new Map<string, number>();
+  for (const c of correcciones) {
+    const s = expandirPulsos(c.solucion);
+    c.aciertos.forEach((ok, i) => {
+      const id = s[i]?.figuraId;
+      if (!ok && id) cuenta.set(id, (cuenta.get(id) ?? 0) + 1);
+    });
+  }
+  return [...cuenta.entries()].sort((a, b) => b[1] - a[1]).map(([id]) => id);
+}
+
+/** Dos o tres frases a partir de los fallos de la tanda. Nombra figuras, nunca números de pulso. */
+export function comentarioTanda(correcciones: Correccion[], cfg: Config, _pulsosCompas?: number): string[] {
   const algunFallo = correcciones.some((c) => c.aciertos.some((ok) => !ok));
-  const conf = cfg.ejercicio === "error" ? null : confusionPrincipal(correcciones);
+  if (!algunFallo) return [cfg.nivel === 1 ? T.todoBien : T.todoBienNivel2];
+  const frases: string[] = [];
+  const conf = confusionPrincipal(correcciones);
   if (conf) {
     const clave = [conf.puesta, conf.esperada].sort().join("|");
-    frases.push(T.confusion(datos(conf.puesta), datos(conf.esperada), T.pistas[clave] ?? ""));
+    frases.push(T.confusion(datos(conf.esperada), datos(conf.puesta), conf.veces, T.pistas[clave] ?? ""));
+  } else {
+    const ids = figurasFalladas(correcciones);
+    if (ids.some((id) => figura(id).pulsos > 1)) frases.push(T.largas);
+    else if (ids.length) frases.push(T.figuras(ids.slice(0, 2).map((id) => figura(id).nombre)));
   }
-  const pos = posicionFallos(correcciones, pulsosCompas);
-  if (pos) frases.push(pos === "primero" ? T.primerPulso : T.ultimoPulso);
   if (correcciones.some((c) => c.equivalencias.some(Boolean))) frases.push(T.equivalencia);
-
-  if (!algunFallo) {
-    const masRapido = TEMPOS.some((t) => t.ppm > cfg.ppm);
-    if (frases.length === 0) frases.push(T.todoBien);
-    frases.push(masRapido ? T.sugerenciaTempo : cfg.nivel === 1 ? T.sugerenciaNivel : T.sugerenciaFin);
-  } else if (frases.length === 0) {
-    frases.push(T.generico);
-  }
   return frases.slice(0, 3);
 }
