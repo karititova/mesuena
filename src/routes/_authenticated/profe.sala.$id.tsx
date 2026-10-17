@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useRef, useState } from "react";
 import { Baldo } from "@/components/Baldo";
+import { ComparacionError } from "@/components/ComparacionError";
 import { Partitura } from "@/components/Partitura";
 import { Contador, useReproductor } from "@/components/Reproduccion";
 import { compas as getCompas, type Compas } from "@/musica/compases";
@@ -183,7 +184,12 @@ function Revelada({ d, c, onSeguir, ocupado }: { d: Datos; c: Compas; onSeguir: 
   return (
     <section className="space-y-8">
       <h1 className="font-display text-5xl font-bold">{tituloPregunta(d)}</h1>
-      <div className="tarjeta partitura-sala"><Partitura compas={c} ids={correcta} numCompases={d.sesion.num_compases} silabas etiqueta="Solución" /></div>
+      {p.ej.tipo === "cual" && <RecuentoOpciones ej={p.ej} rs={rs} />}
+      {p.ej.tipo === "error" ? (
+        <div className="tarjeta partitura-sala"><ComparacionError compas={c} escrito={p.ej.ritmo} sonado={p.ej.suena!} pulso={p.ej.errorPulso!} numCompases={d.sesion.num_compases} /></div>
+      ) : (
+        <div className="tarjeta partitura-sala"><Partitura compas={c} ids={correcta} numCompases={d.sesion.num_compases} silabas etiqueta="Solución" /></div>
+      )}
       <div className="space-y-3">
         <h2 className="text-2xl font-semibold">Fallos por pulso <span className="text-lg font-normal text-muted-foreground">· {rs.length} respuestas</span></h2>
         <MapaPulsos pcts={mapaPulsos(rs, total)} c={c} />
