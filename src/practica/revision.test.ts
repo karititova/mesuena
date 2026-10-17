@@ -27,7 +27,7 @@ describe("comentario del resumen", () => {
   it("detecta el par de figuras confundidas", () => {
     const c = [dict(["corchea_dos_semis", "negra"], ["dos_semis_corchea", "negra"]), dict(["negra", "corchea_dos_semis"], ["negra", "dos_semis_corchea"])];
     expect(confusionPrincipal(c)).toEqual({ puesta: "corchea_dos_semis", esperada: "dos_semis_corchea", veces: 2 });
-    expect(comentarioTanda(c, cfg, 2)[0]).toMatch(/^Has confundido dos semicorcheas y corchea \\(TI-RI TI\\) con corchea y dos semicorcheas \\(TI TI-RI\\) dos veces: la parte partida va al principio\.$/);
+    expect(comentarioTanda(c, cfg, 2)[0]).toBe("Has confundido dos semicorcheas y corchea (TI-RI TI) con corchea y dos semicorcheas (TI TI-RI) dos veces: la parte partida va al principio.");
   });
   it("un solo fallo de un par no basta", () => {
     expect(confusionPrincipal([dict(["corchea_dos_semis", "negra"], ["dos_semis_corchea", "negra"])])).toBeNull();
