@@ -20,6 +20,7 @@ import { Route as PracticarFigurasRouteImport } from './routes/practicar.figuras
 import { Route as PracticarTandaRouteImport } from './routes/practicar.tanda'
 import { Route as ProfeIndexRouteImport } from './routes/profe.index'
 import { Route as RepasoIndexRouteImport } from './routes/repaso.index'
+import { Route as RepasoCodigoRouteImport } from './routes/repaso.$codigo'
 import { Route as UnirseIndexRouteImport } from './routes/unirse.index'
 import { Route as UnirseCodigoRouteImport } from './routes/unirse.$codigo'
 import { Route as AuthenticatedProfeClasesRouteImport } from './routes/_authenticated/profe.clases'
@@ -80,6 +81,11 @@ const RepasoIndexRoute = RepasoIndexRouteImport.update({
   path: '/repaso/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RepasoCodigoRoute = RepasoCodigoRouteImport.update({
+  id: '/repaso/$codigo',
+  path: '/repaso/$codigo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const UnirseIndexRoute = UnirseIndexRouteImport.update({
   id: '/unirse/',
   path: '/unirse/',
@@ -116,6 +122,7 @@ export interface FileRoutesByFullPath {
   '/practicar/ejercicio': typeof PracticarEjercicioRoute
   '/practicar/figuras': typeof PracticarFigurasRoute
   '/practicar/tanda': typeof PracticarTandaRoute
+  '/repaso/$codigo': typeof RepasoCodigoRoute
   '/unirse/$codigo': typeof UnirseCodigoRoute
   '/practicar/': typeof PracticarIndexRoute
   '/profe/': typeof ProfeIndexRoute
@@ -133,6 +140,7 @@ export interface FileRoutesByTo {
   '/practicar/ejercicio': typeof PracticarEjercicioRoute
   '/practicar/figuras': typeof PracticarFigurasRoute
   '/practicar/tanda': typeof PracticarTandaRoute
+  '/repaso/$codigo': typeof RepasoCodigoRoute
   '/unirse/$codigo': typeof UnirseCodigoRoute
   '/practicar': typeof PracticarIndexRoute
   '/profe': typeof ProfeIndexRoute
@@ -152,6 +160,7 @@ export interface FileRoutesById {
   '/practicar/ejercicio': typeof PracticarEjercicioRoute
   '/practicar/figuras': typeof PracticarFigurasRoute
   '/practicar/tanda': typeof PracticarTandaRoute
+  '/repaso/$codigo': typeof RepasoCodigoRoute
   '/unirse/$codigo': typeof UnirseCodigoRoute
   '/practicar/': typeof PracticarIndexRoute
   '/profe/': typeof ProfeIndexRoute
@@ -171,6 +180,7 @@ export interface FileRouteTypes {
     | '/practicar/ejercicio'
     | '/practicar/figuras'
     | '/practicar/tanda'
+    | '/repaso/$codigo'
     | '/unirse/$codigo'
     | '/practicar/'
     | '/profe/'
@@ -188,6 +198,7 @@ export interface FileRouteTypes {
     | '/practicar/ejercicio'
     | '/practicar/figuras'
     | '/practicar/tanda'
+    | '/repaso/$codigo'
     | '/unirse/$codigo'
     | '/practicar'
     | '/profe'
@@ -206,6 +217,7 @@ export interface FileRouteTypes {
     | '/practicar/ejercicio'
     | '/practicar/figuras'
     | '/practicar/tanda'
+    | '/repaso/$codigo'
     | '/unirse/$codigo'
     | '/practicar/'
     | '/profe/'
@@ -225,6 +237,7 @@ export interface RootRouteChildren {
   PracticarEjercicioRoute: typeof PracticarEjercicioRoute
   PracticarFigurasRoute: typeof PracticarFigurasRoute
   PracticarTandaRoute: typeof PracticarTandaRoute
+  RepasoCodigoRoute: typeof RepasoCodigoRoute
   UnirseCodigoRoute: typeof UnirseCodigoRoute
   PracticarIndexRoute: typeof PracticarIndexRoute
   ProfeIndexRoute: typeof ProfeIndexRoute
@@ -311,6 +324,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RepasoIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/repaso/$codigo': {
+      id: '/repaso/$codigo'
+      path: '/repaso/$codigo'
+      fullPath: '/repaso/$codigo'
+      preLoaderRoute: typeof RepasoCodigoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/unirse/': {
       id: '/unirse/'
       path: '/unirse'
@@ -373,6 +393,7 @@ const rootRouteChildren: RootRouteChildren = {
   PracticarEjercicioRoute: PracticarEjercicioRoute,
   PracticarFigurasRoute: PracticarFigurasRoute,
   PracticarTandaRoute: PracticarTandaRoute,
+  RepasoCodigoRoute: RepasoCodigoRoute,
   UnirseCodigoRoute: UnirseCodigoRoute,
   PracticarIndexRoute: PracticarIndexRoute,
   ProfeIndexRoute: ProfeIndexRoute,
