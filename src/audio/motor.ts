@@ -8,6 +8,8 @@ let Tone: ToneT | null = null;
 let ritmoSynth: ToneNS.PolySynth<ToneNS.MembraneSynth> | null = null;
 let metroSynth: ToneNS.MembraneSynth | null = null;
 let parte: ToneNS.Part | null = null;
+let limitador: ToneNS.Limiter | null = null;
+let escuchaVisible = false;
 
 /** Hueco de silencio antes de la nota siguiente (s). */
 export const HUECO = 0.04;
@@ -26,12 +28,49 @@ export const RITMO_VOZ = {
   pitchDecay: 0.006,
   octaves: 1.5,
   envolvente: { attack: 0.001, decay: 0.07, sustain: 0, release: 0.02 },
-  volumen: -4,
+  volumen: 4,
 };
 
-/** Debe llamarse desde un gesto del usuario (iPhone). Devuelve false si no hay audioSession. */
+function crearSintes(T: ToneT) {
+  ritmoSynth?.dispose();
+  metroSynth?.dispose();
+  limitador?.dispose();
+  // Limitador al final de la cadena: +8 dB sin distorsión.
+  limitador = new T.Limiter(-1).toDestination();
+  ritmoSynth = new T.PolySynth(T.MembraneSynth, {
+    pitchDecay: RITMO_VOZ.pitchDecay,
+    octaves: RITMO_VOZ.octaves,
+    envelope: RITMO_VOZ.envolvente,
+  }).connect(limitador);
+  ritmoSynth.volume.value = RITMO_VOZ.volumen;
+  metroSynth = new T.MembraneSynth({
+    pitchDecay: 0.01,
+    octaves: 2,
+    envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.02 },
+  }).connect(limitador);
+  metroSynth.volume.value = 0;
+}
+
+const estado = (T: ToneT) => T.getContext().rawContext.state as string;
+
+async function esperarActivo(T: ToneT, ms = 600) {
+  const fin = performance.now() + ms;
+  while (estado(T) !== "running" && performance.now() < fin) {
+    try {
+      await T.start();
+      await (T.getContext().rawContext as AudioContext).resume();
+    } catch {
+      /* se reintenta */
+    }
+    if (estado(T) !== "running") await new Promise((r) => requestAnimationFrame(() => r(null)));
+  }
+  return estado(T) === "running";
+}
+
+/** Debe llamarse desde un gesto del usuario (iPhone). Recupera el audio tras bloquear o cambiar de app. */
 export async function iniciarAudio(): Promise<{ audioSession: boolean }> {
   if (!Tone) Tone = await import("tone");
+  const T = Tone;
   const nav = navigator as Navigator & { audioSession?: { type: string } };
   let audioSession = false;
   if (nav.audioSession) {
@@ -42,21 +81,24 @@ export async function iniciarAudio(): Promise<{ audioSession: boolean }> {
       /* no soportado */
     }
   }
-  await Tone.start();
-  if (!ritmoSynth) {
-    ritmoSynth = new Tone.PolySynth(Tone.MembraneSynth, {
-      pitchDecay: RITMO_VOZ.pitchDecay,
-      octaves: RITMO_VOZ.octaves,
-      envelope: RITMO_VOZ.envolvente,
-    }).toDestination();
-    ritmoSynth.volume.value = RITMO_VOZ.volumen;
-    metroSynth = new Tone.MembraneSynth({
-      pitchDecay: 0.01,
-      octaves: 2,
-      envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.02 },
-    }).toDestination();
-    metroSynth.volume.value = -8;
+  if (!escuchaVisible) {
+    escuchaVisible = true;
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible" && estado(T) !== "running") {
+        (T.getContext().rawContext as AudioContext).resume?.().catch(() => {});
+      }
+    });
   }
+  let nuevo = false;
+  if (!(await esperarActivo(T))) {
+    // «interrupted» o «closed»: contexto nuevo y sintetizadores nuevos.
+    parte?.dispose();
+    parte = null;
+    T.setContext(new T.Context());
+    nuevo = true;
+    await esperarActivo(T);
+  }
+  if (!ritmoSynth || nuevo) crearSintes(T);
   return { audioSession };
 }
 
@@ -86,7 +128,6 @@ export function eventosDe(
   ids: string[],
   ppm: number,
   numCompases: number,
-  conPulso = true,
 ): { eventos: Evento[]; fin: number } {
   const segPulso = 60 / ppm;
   const segUnidad = segPulso / c.unidadesPulso;
@@ -97,8 +138,8 @@ export function eventosDe(
   for (let p = 0; p < totalPulsos; p++) {
     const enEntrada = p < pulsosEntrada;
     const fuerte = p % c.pulsos === 0;
-    // Sin «Pulso» el evento sigue existiendo (mueve el contador) pero no suena.
-    const vel = enEntrada ? (fuerte ? 1 : 0.6) : conPulso ? (fuerte ? 0.35 : 0.2) : 0;
+    // Tras la entrada el evento sigue existiendo (mueve el marcador) pero no suena.
+    const vel = enEntrada ? (fuerte ? 1 : 0.6) : 0;
     eventos.push({ time: p * segPulso, tipo: "metro", fuerte, vel, pulso: p - pulsosEntrada });
   }
   // Notas: cada una dura hasta la siguiente nota o silencio, menos el hueco.
@@ -131,13 +172,12 @@ export async function reproducir(
   numCompases: number,
   alTerminar?: () => void,
   alPulso?: (pulso: number) => void,
-  conPulso = true,
 ) {
   await iniciarAudio();
   if (!Tone) return;
   parar();
   const T = Tone;
-  const { eventos, fin } = eventosDe(c, ids, ppm, numCompases, conPulso);
+  const { eventos, fin } = eventosDe(c, ids, ppm, numCompases);
   parte = new T.Part<Evento>((time, ev) => {
     if (ev.tipo === "ritmo") ritmoSynth!.triggerAttackRelease(RITMO_VOZ.nota, RITMO_VOZ.golpe, time, ev.vel);
     else {
