@@ -14,6 +14,8 @@ import type { Ejercicio } from "@/practica/ejercicios";
 import { anadirDemo, avanzarSala, datosSala, responderDemo } from "@/clase/profe.functions";
 import { erroresFrecuentes, mapaPulsos, pulsoDificil, respuestaDemo, resumenClase, tonoFallo, type FilaRespuesta } from "@/clase/agregados";
 import { useCambiosSala } from "@/clase/useCambiosSala";
+import { figurasRepaso } from "@/clase/repaso";
+import { resumenClaseIA } from "@/ia/ia.functions";
 
 export const Route = createFileRoute("/_authenticated/profe/sala/$id")({
   head: () => ({
@@ -226,6 +228,7 @@ function Terminada({ d }: { d: Datos }) {
           {r.confusion && <p className="text-muted-foreground">{r.confusion.veces} veces</p>}
         </div>
       </div>
+      <ResumenIA d={d} />
       <div className="space-y-3">
         <h2 className="text-2xl font-semibold">Alumnos</h2>
         <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -239,6 +242,26 @@ function Terminada({ d }: { d: Datos }) {
       </div>
       <button type="button" onClick={() => navigate({ to: "/profe/clases" })} className="boton boton-primario px-10 text-xl">Cerrar</button>
     </section>
+  );
+}
+
+/** Resumen redactado por la IA (se guarda) y «Preparar la próxima clase» con las figuras que elige el motor. */
+function ResumenIA({ d }: { d: Datos }) {
+  const pedir = useServerFn(resumenClaseIA);
+  const q = useQuery({ queryKey: ["resumen-ia", d.sesion.id], queryFn: () => pedir({ data: { id: d.sesion.id } }).catch(() => ({ texto: null })), staleTime: Infinity, retry: false });
+  const sol = new Map(d.preguntas.map((p) => [p.id, p.ej.tipo === "error" ? p.ej.suena! : p.ej.ritmo]));
+  const cs = d.respuestas.map((r) => ({ aciertos: r.aciertos, equivalencias: [], acierto: r.acierto, respuesta: r.respuesta, solucion: sol.get(r.pregunta_id) ?? [] }));
+  const figuras = figurasRepaso(cs, d.sesion.compas, d.sesion.nivel as 1 | 2, d.sesion.figuras);
+  const lineas = q.data?.texto?.split("\n").map((l) => l.replace(/^[-•]\s*/, "").trim()).filter(Boolean) ?? [];
+  return (
+    <div className="tarjeta space-y-4">
+      <h2 className="text-2xl font-semibold">Resumen de la clase</h2>
+      {q.isLoading && <p className="text-muted-foreground">Preparando el resumen…</p>}
+      {lineas.length > 0 && <ul className="list-disc space-y-1 pl-5 text-lg">{lineas.map((l, i) => <li key={i}>{l}</li>)}</ul>}
+      <Link to="/profe/nueva" search={{ nivel: d.sesion.nivel as 1 | 2, compas: d.sesion.compas, figuras: figuras.join(","), ejercicio: d.sesion.ejercicio as "dictado", ppm: d.sesion.ppm, n: d.sesion.num_compases === 1 ? 1 : 2 }} className="boton boton-secundario px-6">
+        Preparar la próxima clase
+      </Link>
+    </div>
   );
 }
 
