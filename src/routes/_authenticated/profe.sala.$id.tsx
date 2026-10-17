@@ -132,7 +132,7 @@ function Pregunta({ d, c, onRevelar, ocupado }: { d: Datos; c: Compas; onRevelar
     <section className="space-y-8">
       <h1 className="font-display text-5xl font-bold">Pregunta {p.orden + 1} de {d.sesion.num_preguntas}</h1>
       {p.ej.tipo !== "dictado" && (
-        <div className="tarjeta"><Partitura compas={c} ids={p.ej.ritmo} numCompases={d.sesion.num_compases} silabas={false} marca={r.marca} etiqueta="Partitura de la pregunta" /></div>
+        <div className="tarjeta partitura-sala"><Partitura compas={c} ids={p.ej.ritmo} numCompases={d.sesion.num_compases} silabas={false} marca={r.marca} etiqueta="Partitura de la pregunta" /></div>
       )}
       <Reproducir r={r} c={c} ids={suena} />
       <p className="font-sans text-7xl font-bold tabular-nums">
@@ -171,7 +171,7 @@ function Revelada({ d, c, onSeguir, ocupado }: { d: Datos; c: Compas; onSeguir: 
   return (
     <section className="space-y-8">
       <h1 className="font-display text-5xl font-bold">Pregunta {p.orden + 1} de {d.sesion.num_preguntas}</h1>
-      <div className="tarjeta"><Partitura compas={c} ids={correcta} numCompases={d.sesion.num_compases} silabas etiqueta="Solución" /></div>
+      <div className="tarjeta partitura-sala"><Partitura compas={c} ids={correcta} numCompases={d.sesion.num_compases} silabas etiqueta="Solución" /></div>
       <div className="space-y-3">
         <h2 className="text-2xl font-semibold">Fallos por pulso <span className="text-lg font-normal text-muted-foreground">· {rs.length} respuestas</span></h2>
         <MapaPulsos pcts={mapaPulsos(rs, total)} c={c} />
