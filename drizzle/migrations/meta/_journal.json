@@ -15,6 +15,13 @@
       "when": 1792252254104,
       "tag": "0001_explicaciones_ia",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792253143093,
+      "tag": "0002_rondas_y_borrado_seguro",
+      "breakpoints": true
     }
   ]
 }

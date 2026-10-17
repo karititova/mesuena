@@ -1,8 +1,9 @@
 // Dibujo de partituras rítmicas con VexFlow 4.2. Solo navegador (importar dinámicamente).
-import { BarlineType, Beam, Dot, Formatter, Fraction, GhostNote, Renderer, Stave, StaveNote, Voice } from "vexflow";
+import { BarlineType, Beam, Dot, Formatter, Fraction, GhostNote, Renderer, Stave, StaveNote, Voice, Flow } from "vexflow";
 import type { StemmableNote } from "vexflow";
 import { repartirEnCompases, type Compas } from "./compases";
 import { figura } from "./figuras";
+import { limitesPulsos } from "./zonas";
 
 export type EstadoPulso = "ok" | "fallo" | null;
 
@@ -242,14 +243,19 @@ export function dibujarPartitura(div: HTMLDivElement, o: OpcionesPartitura): Zon
       }
     });
 
-    inicios.forEach((ini, k) => {
-      const x0 = ini.nota.getAbsoluteX() + 6;
-      const x1 = k + 1 < inicios.length ? inicios[k + 1]!.nota.getAbsoluteX() + 6 : finX;
-      const paso = (x1 - x0) / ini.pulsos;
-      for (let i = 0; i < ini.pulsos; i++) {
-        zonas.push({ pulso: pulsoGlobal + ini.pulso0 + i, x: x0 - 10 + paso * i, y: y0 + 4, w: paso, h: yPunto - y0 + 12 });
-      }
+    let unidad = 0;
+    const ataques = tickables.map((nota) => {
+      const punto = { unidad, x: nota.getAbsoluteX() - 4 };
+      unidad += nota.getTicks().value() / (Flow.RESOLUTION / 16);
+      return punto;
     });
+    const limites = limitesPulsos(ataques, c.pulsos, c.unidadesPulso, stave.getX() + stave.getWidth() - 6);
+    for (let p = 0; p < c.pulsos; p++) {
+      const inicio = limites[p];
+      const fin = limites[p + 1];
+      if (inicio === undefined || fin === undefined) continue;
+      zonas.push({ pulso: pulsoGlobal + p, x: inicio, y: y0 + 4, w: fin - inicio, h: yPunto - y0 + 12 });
+    }
 
     pulsoGlobal += c.pulsos;
     x += ancho;

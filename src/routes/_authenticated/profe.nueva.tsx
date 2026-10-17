@@ -8,7 +8,7 @@ import { Segmentado } from "@/components/Segmentado";
 import { COMPASES, compas as getCompas, TEMPOS } from "@/musica/compases";
 import { figurasDisponibles, type Nivel } from "@/musica/figuras";
 import { EJERCICIOS, seleccionValida, type TipoEjercicio } from "@/practica/ejercicios";
-import { crearSesion } from "@/clase/profe.functions";
+import { crearSesion, anadirRonda } from "@/clase/profe.functions";
 import { leerBusqueda, listaFiguras } from "@/practica/busqueda";
 import { interpretarClase } from "@/ia/ia.functions";
 import { PREGUNTAS_DEFECTO, PREGUNTAS_MAX, PREGUNTAS_MIN } from "@/clase/sala";
@@ -24,13 +24,20 @@ export const Route = createFileRoute("/_authenticated/profe/nueva")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  validateSearch: leerBusqueda,
+  validateSearch: (s: Record<string, unknown>): ReturnType<typeof leerBusqueda> & { sesion?: string; preguntas?: number } => {
+    const out: ReturnType<typeof leerBusqueda> & { sesion?: string; preguntas?: number } = leerBusqueda(s);
+    if (typeof s['sesion'] === "string" && /^[0-9a-f-]{36}$/i.test(s['sesion'])) out.sesion = s['sesion'];
+    const n = Number(s['preguntas']);
+    if (Number.isInteger(n) && n >= PREGUNTAS_MIN && n <= PREGUNTAS_MAX) out.preguntas = n;
+    return out;
+  },
   component: NuevaClase,
 });
 
 function NuevaClase() {
   const navigate = useNavigate();
   const crear = useServerFn(crearSesion);
+  const anadir = useServerFn(anadirRonda);
   const interpretar = useServerFn(interpretarClase);
   const b = Route.useSearch();
   const [nivel, setNivel] = useState<Nivel>(b.nivel ?? 1);
@@ -45,7 +52,7 @@ function NuevaClase() {
   const [descripcion, setDescripcion] = useState("");
   const [leyendo, setLeyendo] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
-  const [preguntas, setPreguntas] = useState(PREGUNTAS_DEFECTO);
+  const [preguntas, setPreguntas] = useState(b.preguntas ?? PREGUNTAS_DEFECTO);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -61,7 +68,8 @@ function NuevaClase() {
     setEnviando(true);
     setError(null);
     try {
-      const { id } = await crear({ data: { nivel, compas: compas as "2/4", figuras: elegidas, ejercicio, ppm, numCompases: n, numPreguntas: preguntas } });
+      const cfg = { nivel, compas: compas as "2/4", figuras: elegidas, ejercicio, ppm, numCompases: n, numPreguntas: preguntas };
+      const { id } = b.sesion ? await anadir({ data: { ...cfg, id: b.sesion } }) : await crear({ data: cfg });
       navigate({ to: "/profe/sala/$id", params: { id } });
     } catch {
       setError("No se ha podido crear la clase. Inténtalo de nuevo.");
@@ -85,7 +93,7 @@ function NuevaClase() {
 
   return (
     <Pantalla>
-      <Cabecera titulo="Nueva clase" volver={<Link to="/profe/clases">← Mis clases</Link>} />
+      <Cabecera titulo={b.sesion ? "Añadir ronda" : "Nueva clase"} volver={b.sesion ? <Link to="/profe/sala/$id" params={{ id: b.sesion }}>← Volver a la clase</Link> : <Link to="/profe/clases">← Mis clases</Link>} />
       <div className="tarjeta space-y-3">
         <label htmlFor="describe" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Describe la clase (opcional)</label>
         <textarea id="describe" value={descripcion} onChange={(e) => setDescripcion(e.target.value)} rows={2} maxLength={400} placeholder="Compás compuesto, nivel 2, solo negra con puntillo y tres corcheas, 6 preguntas lentas" className="w-full rounded-xl border border-border bg-background p-3 text-base" />
@@ -129,7 +137,7 @@ function NuevaClase() {
       </div>
       {error && <p className="text-sm text-destructive">{error}</p>}
       <button type="button" disabled={!valida || enviando} onClick={abrir} className="boton boton-primario w-full">
-        {enviando ? "Abriendo…" : "Abrir sala"}
+        {enviando ? "Abriendo…" : b.sesion ? "Empezar ronda" : "Abrir sala"}
       </button>
     </Pantalla>
   );

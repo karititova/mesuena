@@ -22,6 +22,9 @@ export interface VistaAlumno {
   estado?: EstadoSala;
   actual?: number;
   total?: number;
+  ronda?: number;
+  inicioRonda?: number;
+  preguntasRonda?: number;
   cfg?: { nivel: 1 | 2; compas: string; figuras: string[]; ejercicio: TipoEjercicio; ppm: number; numCompases: number };
   apodos?: string[];
   yo?: { apodo: string } | null;
@@ -46,6 +49,9 @@ export const estadoSala = createServerFn({ method: "POST" })
       estado: s.estado as EstadoSala,
       actual: s.pregunta_actual,
       total: s.num_preguntas,
+      ronda: s.ronda,
+      inicioRonda: s.inicio_ronda,
+      preguntasRonda: s.preguntas_ronda,
       cfg: { nivel: s.nivel as 1 | 2, compas: s.compas, figuras: s.figuras, ejercicio: s.ejercicio as TipoEjercicio, ppm: s.ppm, numCompases: s.num_compases },
       apodos: (ps ?? []).map((p) => p.apodo),
       yo: yo ? { apodo: yo.apodo } : null,

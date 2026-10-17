@@ -16,6 +16,8 @@ import { erroresFrecuentes, mapaPulsos, pulsoDificil, respuestaDemo, resumenClas
 import { useCambiosSala } from "@/clase/useCambiosSala";
 import { figurasRepaso } from "@/clase/repaso";
 import { resumenClaseIA } from "@/ia/ia.functions";
+import { numeroRonda } from "@/clase/rondas";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/profe/sala/$id")({
   head: () => ({
@@ -123,7 +125,15 @@ function Reproducir({ r, c, ids }: { r: ReturnType<typeof useReproductor>; c: Co
   );
 }
 
-const actualDe = (d: Datos) => d.preguntas.find((p) => p.orden === d.sesion.pregunta_actual)!;
+const actualDe = (d: Datos) => {
+  const p = d.preguntas.find((p) => p.orden === d.sesion.pregunta_actual);
+  if (!p) throw new Error("Pregunta no encontrada");
+  return p;
+};
+const tituloPregunta = (d: Datos) => {
+  const n = numeroRonda(d.sesion.pregunta_actual, d.sesion.inicio_ronda, d.sesion.preguntas_ronda, d.sesion.ronda);
+  return `Ronda ${n.ronda} · Pregunta ${n.pregunta} de ${n.total}`;
+};
 
 function Pregunta({ d, c, onRevelar, ocupado }: { d: Datos; c: Compas; onRevelar: () => void; ocupado: boolean }) {
   const p = actualDe(d);
@@ -132,7 +142,7 @@ function Pregunta({ d, c, onRevelar, ocupado }: { d: Datos; c: Compas; onRevelar
   const r = useReproductor(c, d.sesion.ppm, d.sesion.num_compases);
   return (
     <section className="space-y-8">
-      <h1 className="font-display text-5xl font-bold">Pregunta {p.orden + 1} de {d.sesion.num_preguntas}</h1>
+      <h1 className="font-display text-5xl font-bold">{tituloPregunta(d)}</h1>
       {p.ej.tipo !== "dictado" && (
         <div className="tarjeta partitura-sala"><Partitura compas={c} ids={p.ej.ritmo} numCompases={d.sesion.num_compases} silabas={false} marca={r.marca} etiqueta="Partitura de la pregunta" /></div>
       )}
@@ -172,7 +182,7 @@ function Revelada({ d, c, onSeguir, ocupado }: { d: Datos; c: Compas; onSeguir: 
   const errores = erroresFrecuentes(rs);
   return (
     <section className="space-y-8">
-      <h1 className="font-display text-5xl font-bold">Pregunta {p.orden + 1} de {d.sesion.num_preguntas}</h1>
+      <h1 className="font-display text-5xl font-bold">{tituloPregunta(d)}</h1>
       <div className="tarjeta partitura-sala"><Partitura compas={c} ids={correcta} numCompases={d.sesion.num_compases} silabas etiqueta="Solución" /></div>
       <div className="space-y-3">
         <h2 className="text-2xl font-semibold">Fallos por pulso <span className="text-lg font-normal text-muted-foreground">· {rs.length} respuestas</span></h2>
@@ -200,7 +210,10 @@ function Revelada({ d, c, onSeguir, ocupado }: { d: Datos; c: Compas; onSeguir: 
           </div>
         </div>
       )}
-      <button type="button" disabled={ocupado} onClick={onSeguir} className="boton boton-primario px-10 text-xl">{ultima ? "Terminar" : "Siguiente"}</button>
+      <div className="flex flex-wrap gap-3">
+        {ultima && <Button asChild variant="outline" className="boton boton-secundario px-10 text-xl"><Link to="/profe/nueva" search={{ sesion: d.sesion.id, preguntas: d.sesion.preguntas_ronda, nivel: d.sesion.nivel as 1 | 2, compas: d.sesion.compas, figuras: d.sesion.figuras.join(","), ejercicio: p.ej.tipo, ppm: d.sesion.ppm, n: d.sesion.num_compases }}>Añadir ronda</Link></Button>}
+        <Button disabled={ocupado} onClick={onSeguir} className="boton boton-primario px-10 text-xl">{ultima ? "Terminar la clase" : "Siguiente"}</Button>
+      </div>
     </section>
   );
 }

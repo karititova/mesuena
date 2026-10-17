@@ -93,10 +93,10 @@ function Contenido({ v, codigo, dispositivo, volver }: { v: VistaRepaso; codigo:
           <li key={p.id} className="tarjeta p-0">
             <button type="button" onClick={() => setAbierta(abierta === p.id ? null : p.id)} aria-expanded={abierta === p.id} className="flex min-h-14 w-full items-center gap-3 px-4 text-left">
               <span className={`size-3 rounded-full ${!p.correccion ? "bg-muted" : p.correccion.acierto ? "bg-acierto" : "bg-destructive"}`} aria-hidden />
-              <span className="flex-1 font-medium">Pregunta {p.orden + 1}</span>
+              <span className="flex-1 font-medium">Ronda {p.ronda} · Pregunta {p.numero}</span>
               <span className="text-sm text-muted-foreground">{!p.correccion ? "Sin respuesta" : p.correccion.acierto ? "Bien" : "Fallada"}</span>
             </button>
-            {abierta === p.id && <Detalle p={p} c={c} ppm={cfg.ppm} n={cfg.numCompases} codigo={codigo} dispositivo={dispositivo} />}
+            {abierta === p.id && <Detalle p={p} c={getCompas(p.cfg.compas)} ppm={p.cfg.ppm} n={p.cfg.numCompases} codigo={codigo} dispositivo={dispositivo} />}
           </li>
         ))}
       </ul>
