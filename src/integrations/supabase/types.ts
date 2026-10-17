@@ -14,6 +14,35 @@ export type Database = {
   }
   public: {
     Tables: {
+      explicaciones: {
+        Row: {
+          clave: string
+          creada: string
+          sesion_id: string
+          texto: string
+        }
+        Insert: {
+          clave: string
+          creada?: string
+          sesion_id: string
+          texto: string
+        }
+        Update: {
+          clave?: string
+          creada?: string
+          sesion_id?: string
+          texto?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "explicaciones_sesion_id_fkey"
+            columns: ["sesion_id"]
+            isOneToOne: false
+            referencedRelation: "sesiones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       participantes: {
         Row: {
           apodo: string
