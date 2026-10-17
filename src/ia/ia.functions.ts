@@ -8,6 +8,8 @@ import { figura } from "@/musica/figuras";
 import { ejercicioDe, PREGUNTAS_MAX, PREGUNTAS_MIN, type Entrada } from "@/clase/sala";
 import { erroresFrecuentes, mapaPulsos, type FilaRespuesta } from "@/clase/agregados";
 import { falloPrincipal } from "@/clase/repaso";
+import { configuracionPregunta } from "@/clase/rondas";
+import type { Config } from "@/practica/ejercicios";
 import { PROMPT_CONFIGURAR_CLASE, PROMPT_EXPLICAR, PROMPT_RESUMIR_CLASE } from "./prompts";
 import { entradaFallo, entradaFallos, ESQUEMA_CLASE, MAX_EXPLICACION, MAX_RESUMEN, sanear, validarCfg, valoresValidos, type CfgClase } from "./texto";
 
@@ -38,6 +40,9 @@ async function pedir(instrucciones: string, entrada: string, max: number) {
 export interface PreguntaRepaso {
   id: string;
   orden: number;
+  ronda: number;
+  numero: number;
+  cfg: Config;
   correccion: Correccion | null;
 }
 export interface VistaRepaso {
@@ -57,11 +62,15 @@ async function cargarAlumno(codigo: string, dispositivo: string) {
     yo ? sb.from("respuestas").select("*").eq("participante_id", yo.id) : Promise.resolve({ data: [] as never[] }),
   ]);
   const preguntas: PreguntaRepaso[] = (qs ?? []).map((q) => {
-    const ej = ejercicioDe(s.ejercicio as TipoEjercicio, q);
+    const cfg = configuracionPregunta(q.configuracion, { nivel: s.nivel as 1 | 2, compas: s.compas, figuras: s.figuras, ejercicio: s.ejercicio as TipoEjercicio, ppm: s.ppm, numCompases: s.num_compases });
+    const ej = ejercicioDe(cfg.ejercicio, q);
     const r = (rs ?? []).find((x) => x.pregunta_id === q.id);
     return {
       id: q.id,
       orden: q.orden,
+      ronda: q.ronda,
+      numero: (qs ?? []).filter((x) => x.ronda === q.ronda && x.orden <= q.orden).length,
+      cfg,
       correccion: r
         ? { aciertos: r.aciertos, equivalencias: r.equivalencias as (string | null)[], acierto: r.acierto, respuesta: r.respuesta, solucion: ej.tipo === "error" ? ej.suena! : ej.ritmo }
         : null,
@@ -90,14 +99,16 @@ export const explicacionAlumno = createServerFn({ method: "POST" })
       if (!a || !a.yo || a.s.estado !== "terminada") return { texto: null };
       const { s, yo } = a;
       if (data.preguntaId) {
-        const c = a.preguntas.find((p) => p.id === data.preguntaId)?.correccion;
+        const pregunta = a.preguntas.find((p) => p.id === data.preguntaId);
+        const c = pregunta?.correccion;
         const f = c && !c.acierto ? falloPrincipal(c) : null;
         if (!f) return { texto: null };
-        return { texto: await cacheado(`A:${yo.id}:${data.preguntaId}`, s.id, () => pedir(PROMPT_EXPLICAR, entradaFallo(s.compas, s.nivel, f), MAX_EXPLICACION)) };
+        return { texto: await cacheado(`A:${yo.id}:${data.preguntaId}`, s.id, () => pedir(PROMPT_EXPLICAR, entradaFallo(pregunta?.cfg.compas ?? s.compas, pregunta?.cfg.nivel ?? s.nivel, f), MAX_EXPLICACION)) };
       }
       const fs = a.preguntas.map((p) => (p.correccion ? falloPrincipal(p.correccion) : null)).filter((f): f is NonNullable<typeof f> => !!f);
       if (!fs.length) return { texto: null };
-      return { texto: await cacheado(`A:${yo.id}:todo`, s.id, () => pedir(PROMPT_EXPLICAR, entradaFallos(s.compas, s.nivel, fs), MAX_EXPLICACION)) };
+      const entradas = a.preguntas.flatMap((p) => { const f = p.correccion ? falloPrincipal(p.correccion) : null; return f ? [entradaFallo(p.cfg.compas, p.cfg.nivel, f)] : []; });
+      return { texto: await cacheado(`A:${yo.id}:todo`, s.id, () => pedir(PROMPT_EXPLICAR, entradas.join("\n"), MAX_EXPLICACION)) };
     } catch (e) {
       console.error(e);
       return { texto: null };
@@ -128,14 +139,15 @@ export const resumenClaseIA = createServerFn({ method: "POST" })
         const correcciones: Correccion[] = [];
         let equivalencias = 0;
         for (const q of qs ?? []) {
-          const ej = ejercicioDe(s.ejercicio as TipoEjercicio, q);
+          const cfg = configuracionPregunta(q.configuracion, { nivel: s.nivel as 1 | 2, compas: s.compas, figuras: s.figuras, ejercicio: s.ejercicio as TipoEjercicio, ppm: s.ppm, numCompases: s.num_compases });
+          const ej = ejercicioDe(cfg.ejercicio, q);
           const sol = ej.tipo === "error" ? ej.suena! : ej.ritmo;
           const de = rs.filter((r) => r.pregunta_id === q.id).map((r) => ({ ...r, entrada: r.entrada as Entrada })) as (FilaRespuesta & { equivalencias: unknown })[];
           if (!de.length) continue;
           const fallo = Math.round((de.filter((r) => !r.acierto).length / de.length) * 100);
           const pulsos = mapaPulsos(de, sol.length ? de[0]!.aciertos.length : 0);
           const frec = erroresFrecuentes(de).map((e) => (e.muestra.entrada.tipo === "error" ? `tocó el pulso ${e.muestra.entrada.tocado + 1}` : e.muestra.respuesta.map(nombre).join(" + ")) + ` (${e.veces})`);
-          lineas.push(`Pregunta ${q.orden + 1}: solución ${sol.map(nombre).join(" + ")}; fallo ${fallo} %; fallo por pulso ${pulsos.map((p) => p + " %").join(", ")}${frec.length ? `; respuestas equivocadas más repetidas: ${frec.join("; ")}` : ""}.`);
+          lineas.push(`Ronda ${q.ronda}, compás ${cfg.compas}, nivel ${cfg.nivel}, pregunta ${q.orden + 1}: solución ${sol.map(nombre).join(" + ")}; fallo ${fallo} %; fallo por pulso ${pulsos.map((p) => p + " %").join(", ")}${frec.length ? `; respuestas equivocadas más repetidas: ${frec.join("; ")}` : ""}.`);
           for (const r of de) {
             const eqs = (r.equivalencias as (string | null)[]) ?? [];
             equivalencias += eqs.filter(Boolean).length;

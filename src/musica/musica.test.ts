@@ -102,7 +102,7 @@ describe("comprobar", () => {
   });
 });
 
-import { eventosDe, RITMO_VOZ, VEL_NOTA, VEL_PULSO } from "@/audio/motor";
+import { eventosDe, RITMO_VOZ, VEL_NOTA, VEL_PULSO, METRO_NOTAS, REFUERZO, COMPRESION } from "@/audio/motor";
 import { compas as cc } from "./compases";
 describe("compás de entrada", () => {
   it.each(["2/4", "6/8", "4/4", "12/8"])("siempre 1 compás en %s", (id) => {
@@ -131,7 +131,7 @@ describe("sonido del ritmo", () => {
     expect(m.filter((e) => (e.pulso ?? 0) >= 0).every((e) => e.vel === 0)).toBe(true);
   });
   it("el ritmo suena siempre en la misma nota fija y sin deslizamiento", () => {
-    expect(RITMO_VOZ.nota).toBe("A5");
+    expect(RITMO_VOZ.nota).toBe("A6");
     expect(RITMO_VOZ.golpe).toBe(0.05);
     expect(RITMO_VOZ.pitchDecay).toBe(0.006);
     expect(RITMO_VOZ.octaves).toBe(1.5);
@@ -139,4 +139,7 @@ describe("sonido del ritmo", () => {
   it("la primera nota de cada pulso suena 2,5 dB más fuerte", () => {
     expect(20 * Math.log10(VEL_PULSO / VEL_NOTA)).toBeCloseTo(2.5, 5);
   });
+  it("el metrónomo sube una octava", () => expect(METRO_NOTAS).toEqual({ fuerte: "E3", suave: "C3" }));
+  it("el ruido dura 30 ms, pasa por 2 kHz y queda 10 dB por debajo", () => expect(REFUERZO).toEqual({ duracion: 0.03, frecuencia: 2000, relativoDb: -10 }));
+  it("el compresor mantiene el ataque de 2 ms a -18 dB", () => expect(COMPRESION).toEqual({ threshold: -18, ratio: 4, attack: 0.002 }));
 });

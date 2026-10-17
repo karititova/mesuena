@@ -5,6 +5,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { crearEjercicio, seleccionValida, type TipoEjercicio } from "@/practica/ejercicios";
 import { APODOS_DEMO } from "./agregados";
 import { corregirEntrada, ejercicioDe, entradaValida, generarCodigo, PREGUNTAS_MAX, PREGUNTAS_MIN, type Entrada } from "./sala";
+import { configuracionPregunta, puedeAnadirRonda } from "./rondas";
 
 const cfgSchema = z.object({
   nivel: z.union([z.literal(1), z.literal(2)]),
@@ -36,6 +37,7 @@ export const crearSesion = createServerFn({ method: "POST" })
           ppm: data.ppm,
           num_compases: data.numCompases,
           num_preguntas: data.numPreguntas,
+          preguntas_ronda: data.numPreguntas,
         })
         .select("id")
         .single();
@@ -43,10 +45,11 @@ export const crearSesion = createServerFn({ method: "POST" })
       else if (error && error.code !== "23505") throw new Error(error.message);
     }
     if (!sesionId) throw new Error("No se pudo crear la clase");
+    const id = sesionId;
     const cfg = { ...data, ejercicio: data.ejercicio as TipoEjercicio };
     const filas = Array.from({ length: data.numPreguntas }, (_, orden) => {
       const ej = crearEjercicio(cfg);
-      return { sesion_id: sesionId!, orden, ritmo: ej.ritmo, opciones: ej.opciones ?? null, correcta: ej.correcta ?? null, suena: ej.suena ?? null, error_pulso: ej.errorPulso ?? null };
+      return { sesion_id: id, orden, configuracion: cfg, ritmo: ej.ritmo, opciones: ej.opciones ?? null, correcta: ej.correcta ?? null, suena: ej.suena ?? null, error_pulso: ej.errorPulso ?? null };
     });
     const { error } = await supabase.from("preguntas").insert(filas);
     if (error) throw new Error(error.message);
@@ -57,7 +60,7 @@ export const misSesiones = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase } = context;
-    const { data: ss } = await supabase.from("sesiones").select("id, codigo, nivel, compas, ejercicio, estado, num_preguntas, creada").order("creada", { ascending: false });
+    const { data: ss } = await supabase.from("sesiones").select("id, codigo, nivel, compas, ejercicio, estado, num_preguntas, ronda, uso_demo, creada").order("creada", { ascending: false });
     const ids = (ss ?? []).map((s) => s.id);
     if (!ids.length) return [];
     const [{ data: ps }, { data: rs }] = await Promise.all([
@@ -86,7 +89,10 @@ export const datosSala = createServerFn({ method: "POST" })
     ]);
     return {
       sesion: s,
-      preguntas: (qs ?? []).map((q) => ({ id: q.id, orden: q.orden, ej: ejercicioDe(s.ejercicio as TipoEjercicio, q) })),
+      preguntas: (qs ?? []).map((q) => {
+        const cfg = configuracionPregunta(q.configuracion, { nivel: s.nivel as 1 | 2, compas: s.compas, figuras: s.figuras, ejercicio: s.ejercicio as TipoEjercicio, ppm: s.ppm, numCompases: s.num_compases });
+        return { id: q.id, orden: q.orden, ronda: q.ronda, cfg, ej: ejercicioDe(cfg.ejercicio, q) };
+      }),
       participantes: ps ?? [],
       respuestas: (rs ?? []).map((r) => ({ ...r, entrada: r.entrada as Entrada })),
     };
@@ -121,6 +127,8 @@ export const anadirDemo = createServerFn({ method: "POST" })
     const filas = APODOS_DEMO.map((apodo, i) => ({ sesion_id: data.id, apodo, demo: true, dispositivo: `demo-${i}-${crypto.randomUUID()}` }));
     const { error } = await supabase.from("participantes").insert(filas);
     if (error) throw new Error(error.message);
+    const { error: marcaError } = await supabase.from("sesiones").update({ uso_demo: true }).eq("id", data.id);
+    if (marcaError) throw new Error(marcaError.message);
     return { ok: true };
   });
 
@@ -161,4 +169,30 @@ export const responderDemo = createServerFn({ method: "POST" })
     });
     if (error && error.code !== "23505") console.error(error);
     return { ok: true };
+  });
+
+export const borrarSesiones = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid().optional(), soloDemo: z.boolean() }).refine((v) => v.soloDemo || !!v.id).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: n, error } = await context.supabase.rpc("borrar_clases", { ...(data.id ? { _id: data.id } : {}), _solo_demo: data.soloDemo });
+    if (error) throw new Error("No se han podido borrar las clases");
+    return { borradas: n };
+  });
+
+export const anadirRonda = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => cfgSchema.extend({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: s } = await context.supabase.from("sesiones").select("estado, pregunta_actual, num_preguntas").eq("id", data.id).single();
+    if (!s || !puedeAnadirRonda(s.estado, s.pregunta_actual, s.num_preguntas)) throw new Error("La ronda no ha terminado");
+    if (!seleccionValida(data.figuras)) throw new Error("Selección de figuras no válida");
+    const { id, numPreguntas, ...cfg } = data;
+    const preguntas = Array.from({ length: numPreguntas }, () => {
+      const ej = crearEjercicio(cfg);
+      return { ritmo: ej.ritmo, opciones: ej.opciones ?? null, correcta: ej.correcta ?? null, suena: ej.suena ?? null, error_pulso: ej.errorPulso ?? null };
+    });
+    const { error } = await context.supabase.rpc("anadir_ronda", { _id: id, _cfg: cfg, _preguntas: preguntas });
+    if (error) throw new Error("No se ha podido añadir la ronda");
+    return { id };
   });

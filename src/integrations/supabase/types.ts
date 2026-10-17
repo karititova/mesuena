@@ -80,32 +80,38 @@ export type Database = {
       }
       preguntas: {
         Row: {
+          configuracion: Json | null
           correcta: number | null
           error_pulso: number | null
           id: string
           opciones: Json | null
           orden: number
           ritmo: string[]
+          ronda: number
           sesion_id: string
           suena: string[] | null
         }
         Insert: {
+          configuracion?: Json | null
           correcta?: number | null
           error_pulso?: number | null
           id?: string
           opciones?: Json | null
           orden: number
           ritmo: string[]
+          ronda?: number
           sesion_id: string
           suena?: string[] | null
         }
         Update: {
+          configuracion?: Json | null
           correcta?: number | null
           error_pulso?: number | null
           id?: string
           opciones?: Json | null
           orden?: number
           ritmo?: string[]
+          ronda?: number
           sesion_id?: string
           suena?: string[] | null
         }
@@ -227,12 +233,16 @@ export type Database = {
           estado: string
           figuras: string[]
           id: string
+          inicio_ronda: number
           nivel: number
           num_compases: number
           num_preguntas: number
           ppm: number
           pregunta_actual: number
+          preguntas_ronda: number
           profesora_id: string
+          ronda: number
+          uso_demo: boolean
         }
         Insert: {
           codigo: string
@@ -242,12 +252,16 @@ export type Database = {
           estado?: string
           figuras: string[]
           id?: string
+          inicio_ronda?: number
           nivel: number
           num_compases?: number
           num_preguntas: number
           ppm: number
           pregunta_actual?: number
+          preguntas_ronda?: number
           profesora_id: string
+          ronda?: number
+          uso_demo?: boolean
         }
         Update: {
           codigo?: string
@@ -257,12 +271,16 @@ export type Database = {
           estado?: string
           figuras?: string[]
           id?: string
+          inicio_ronda?: number
           nivel?: number
           num_compases?: number
           num_preguntas?: number
           ppm?: number
           pregunta_actual?: number
+          preguntas_ronda?: number
           profesora_id?: string
+          ronda?: number
+          uso_demo?: boolean
         }
         Relationships: []
       }
@@ -271,6 +289,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      anadir_ronda: {
+        Args: { _cfg: Json; _id: string; _preguntas: Json }
+        Returns: undefined
+      }
+      borrar_clases: {
+        Args: { _id?: string; _solo_demo?: boolean }
+        Returns: number
+      }
       es_mi_sesion: { Args: { _sesion: string }; Returns: boolean }
     }
     Enums: {

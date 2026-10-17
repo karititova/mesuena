@@ -7,6 +7,11 @@ type ToneT = typeof ToneNS;
 let Tone: ToneT | null = null;
 let ritmoSynth: ToneNS.PolySynth<ToneNS.MembraneSynth> | null = null;
 let metroSynth: ToneNS.MembraneSynth | null = null;
+let ruidoSynth: ToneNS.NoiseSynth | null = null;
+let filtroRuido: ToneNS.Filter | null = null;
+export const REFUERZO = { duracion: 0.03, frecuencia: 2000, relativoDb: -10 };
+export const COMPRESION = { threshold: -18, ratio: 4, attack: 0.002 };
+export const METRO_NOTAS = { fuerte: "E3", suave: "C3" };
 let parte: ToneNS.Part | null = null;
 let limitador: ToneNS.Limiter | null = null;
 let escuchaVisible = false;
@@ -23,7 +28,7 @@ export const VEL_NOTA = Math.pow(10, -2.5 / 20);
  * El acento de la primera nota de cada pulso es solo de volumen.
  */
 export const RITMO_VOZ = {
-  nota: "A5",
+  nota: "A6",
   golpe: 0.05,
   pitchDecay: 0.006,
   octaves: 1.5,
@@ -36,23 +41,28 @@ let compresor: ToneNS.Compressor | null = null;
 function crearSintes(T: ToneT) {
   ritmoSynth?.dispose();
   metroSynth?.dispose();
+  ruidoSynth?.dispose();
+  filtroRuido?.dispose();
   compresor?.dispose();
   limitador?.dispose();
   // Compresor (sube el volumen percibido) + limitador a -0,5 dB: suena fuerte sin distorsión.
   limitador = new T.Limiter(-0.5).toDestination();
-  compresor = new T.Compressor({ threshold: -24, ratio: 4 }).connect(limitador);
+  compresor = new T.Compressor(COMPRESION).connect(limitador);
   ritmoSynth = new T.PolySynth(T.MembraneSynth, {
     pitchDecay: RITMO_VOZ.pitchDecay,
     octaves: RITMO_VOZ.octaves,
     envelope: RITMO_VOZ.envolvente,
-  }).connect(compresor!);
+  }).connect(compresor);
   ritmoSynth.volume.value = RITMO_VOZ.volumen;
   metroSynth = new T.MembraneSynth({
     pitchDecay: 0.01,
     octaves: 2,
     envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.02 },
-  }).connect(compresor!);
+  }).connect(compresor);
   metroSynth.volume.value = 4;
+  filtroRuido = new T.Filter(REFUERZO.frecuencia, "highpass").connect(compresor);
+  ruidoSynth = new T.NoiseSynth({ noise: { type: "white" }, envelope: { attack: 0.001, decay: REFUERZO.duracion, sustain: 0, release: 0.001 } }).connect(filtroRuido);
+  ruidoSynth.volume.value = RITMO_VOZ.volumen + REFUERZO.relativoDb;
 }
 
 const estado = (T: ToneT) => T.getContext().rawContext.state as string;
@@ -108,7 +118,9 @@ export async function iniciarAudio(): Promise<{ audioSession: boolean }> {
     crearSintes(T);
     // «Calienta» el sintetizador con una nota silenciosa antes del primer clic.
     try {
-      ritmoSynth!.triggerAttackRelease(RITMO_VOZ.nota, 0.02, T.now(), 0);
+      ritmoSynth?.triggerAttackRelease(RITMO_VOZ.nota, 0.02, T.now(), 0);
+      metroSynth?.triggerAttackRelease(METRO_NOTAS.suave, 0.02, T.now(), 0);
+      ruidoSynth?.triggerAttackRelease(REFUERZO.duracion, T.now(), 0);
     } catch {
       /* sin gesto aún */
     }
@@ -167,7 +179,7 @@ export function eventosDe(
   }
   notas.forEach((n, i) => {
     if (n.silencio) return;
-    const sig = i + 1 < notas.length ? notas[i + 1]!.u : u;
+    const sig = notas[i + 1]?.u ?? u;
     const inicioPulso = n.u % c.unidadesPulso === 0;
     eventos.push({
       time: offset + n.u * segUnidad,
@@ -193,9 +205,12 @@ export async function reproducir(
   const T = Tone;
   const { eventos, fin } = eventosDe(c, ids, ppm, numCompases);
   parte = new T.Part<Evento>((time, ev) => {
-    if (ev.tipo === "ritmo") ritmoSynth!.triggerAttackRelease(RITMO_VOZ.nota, RITMO_VOZ.golpe, time, ev.vel);
+    if (ev.tipo === "ritmo") {
+      ritmoSynth?.triggerAttackRelease(RITMO_VOZ.nota, RITMO_VOZ.golpe, time, ev.vel);
+      ruidoSynth?.triggerAttackRelease(REFUERZO.duracion, time, ev.vel);
+    }
     else {
-      if (ev.vel > 0) metroSynth!.triggerAttackRelease(ev.fuerte ? "E2" : "C2", 0.04, time, ev.vel);
+      if (ev.vel > 0) metroSynth?.triggerAttackRelease(ev.fuerte ? METRO_NOTAS.fuerte : METRO_NOTAS.suave, 0.04, time, ev.vel);
       if (alPulso && ev.pulso !== undefined) {
         const p = ev.pulso;
         T.getDraw().schedule(() => alPulso(p), time);

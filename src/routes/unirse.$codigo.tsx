@@ -12,6 +12,7 @@ import { idDispositivo } from "@/practica/almacen";
 import { enviarRespuesta, estadoSala, unirse, type VistaAlumno } from "@/clase/alumno.functions";
 import { codigoValido, entradaDe, normalizarCodigo } from "@/clase/sala";
 import { useCambiosSala } from "@/clase/useCambiosSala";
+import { numeroRonda } from "@/clase/rondas";
 
 export const Route = createFileRoute("/unirse/$codigo")({
   head: () => ({
@@ -136,7 +137,8 @@ function PreguntaAlumno({ v, codigo, dispositivo, contexto, alEnviar }: { v: Vis
   const [enviada, setEnviada] = useState(!!v.enviada);
   const cfg = v.cfg!;
   const c = getCompas(cfg.compas);
-  const titulo = `Pregunta ${v.actual! + 1} de ${v.total}`;
+  const nr = numeroRonda(v.actual ?? 0, v.inicioRonda ?? 0, v.preguntasRonda ?? v.total ?? 0, v.ronda ?? 1);
+  const titulo = `Ronda ${nr.ronda} · Pregunta ${nr.pregunta} de ${nr.total}`;
   const ej = v.ejercicio;
   if (!ej) return <Pantalla><Cabecera titulo={titulo} contexto={contexto} /></Pantalla>;
 
@@ -184,6 +186,7 @@ function PreguntaAlumno({ v, codigo, dispositivo, contexto, alEnviar }: { v: Vis
   return (
     <Pantalla>
       <Cabecera titulo={titulo} contexto={contexto} />
+      {nr.ronda > 1 && nr.pregunta === 1 && <p role="status" className="text-primary">Nueva ronda: {cfg.compas}, nivel {cfg.nivel}</p>}
       <EjercicioVista
         ej={ej}
         cfg={{ ...cfg, ejercicio: ej.tipo }}

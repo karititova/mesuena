@@ -20,3 +20,6 @@
 - Students have no account: every student read/write goes through server functions in `src/clase/alumno.functions.ts` that check room code + device id; students never get direct table access or other students' answers.
 - Realtime uses only the public `salas` table (state + counters, no personal data); clients refetch through server functions when it changes.
 - AI (Lovable AI Gateway) only writes text; correctness and figure suggestions come from the engine (src/clase/repaso.ts). Every AI text is cached in the explicaciones table, and calls are cut at 8 s and fail silently — saves credits and keeps screens working.
+- Each question snapshots its round configuration; the session cursor stays cumulative while round labels restart — preserves earlier questions and reviews across configuration changes.
+- Round insertion and class deletion use atomic ownership-checked database functions called through authenticated server functions — prevents partial writes and deleting another teacher's class.
+- Pulse highlight boundaries use all note attacks and the barline, not figure-start spacing — covers grouped notes and final pulses completely.
