@@ -45,14 +45,14 @@ function crearSintes(T: ToneT) {
     pitchDecay: RITMO_VOZ.pitchDecay,
     octaves: RITMO_VOZ.octaves,
     envelope: RITMO_VOZ.envolvente,
-  }).connect(limitador);
+  }).connect(compresor!);
   ritmoSynth.volume.value = RITMO_VOZ.volumen;
   metroSynth = new T.MembraneSynth({
     pitchDecay: 0.01,
     octaves: 2,
     envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.02 },
-  }).connect(limitador);
-  metroSynth.volume.value = 0;
+  }).connect(compresor!);
+  metroSynth.volume.value = 4;
 }
 
 const estado = (T: ToneT) => T.getContext().rawContext.state as string;
