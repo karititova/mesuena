@@ -32,7 +32,6 @@ function Laboratorio() {
   const [numCompases, setNumCompases] = useState(1);
   const [ppm, setPpm] = useState<number>(60);
   const [silabas, setSilabas] = useState(false);
-  const [conPulso, setConPulso] = useState(true);
   const [pulso, setPulso] = useState<number | null>(null);
   const [ritmo, setRitmo] = useState<string[]>([]);
   const [respuesta, setRespuesta] = useState<string[]>([]);
@@ -81,7 +80,6 @@ function Laboratorio() {
         setPulso(null);
       },
       setPulso,
-      conPulso,
     );
   };
 
@@ -176,15 +174,6 @@ function Laboratorio() {
           </button>
           <button type="button" onClick={detener} className="boton boton-secundario whitespace-nowrap px-4">
             ■ Parar
-          </button>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={conPulso}
-            onClick={() => setConPulso(!conPulso)}
-            className={conPulso ? "boton boton-primario px-4" : "boton boton-secundario px-4"}
-          >
-            Pulso
           </button>
         </div>
       </section>
