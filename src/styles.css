@@ -207,3 +207,9 @@
   &[aria-checked="true"] { color: var(--color-foreground); border-color: var(--color-muted-foreground); }
 }
 .partitura-compacta svg { max-height: 110px; width: auto !important; max-width: 100%; margin-inline: auto; }
+
+@utility campo {
+  display: block; width: 100%; min-height: 3.25rem; padding: 0 1rem; border-radius: 12px;
+  background: var(--color-card); border: 1.5px solid var(--color-marron-claro); font-size: 1.0625rem; color: var(--color-foreground);
+  &:focus { outline: 2px solid var(--color-primary); outline-offset: 1px; border-color: transparent; }
+}
