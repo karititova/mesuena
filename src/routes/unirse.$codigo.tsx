@@ -71,7 +71,7 @@ function ClaseAlumno() {
       <Pantalla>
         <Cabecera titulo="Esperando a que empiece" contexto={contexto} />
         <section className="tarjeta flex flex-col items-center gap-4 text-center">
-          <Baldo estado="espera" className="size-24 sm:size-24" />
+          <Baldo estado="espera" className="size-[130px]" />
           <p className="text-muted-foreground">{v.apodos!.length} en la clase</p>
           <ul className="flex flex-wrap justify-center gap-2">
             {v.apodos!.map((a, i) => <li key={i} className="pildora">{a}</li>)}
@@ -85,7 +85,7 @@ function ClaseAlumno() {
       <Pantalla>
         <Cabecera titulo="Clase terminada" contexto={contexto} />
         <section className="tarjeta flex flex-col items-center gap-4 text-center">
-          <Baldo estado={v.misAciertos! >= Math.ceil(v.total! * 0.8) ? "celebracion" : "neutro"} className="size-24 sm:size-24" />
+          <Baldo estado={v.misAciertos! >= Math.ceil(v.total! * 0.8) ? "celebracion" : "neutro"} className="size-[130px]" />
           <p className="font-sans text-5xl font-bold tabular-nums">{v.misAciertos} de {v.total}</p>
           <p className="text-muted-foreground">preguntas bien</p>
           <Link to="/repaso/$codigo" params={{ codigo }} className="boton boton-primario w-full">Tu repaso</Link>
@@ -183,7 +183,7 @@ function PreguntaAlumno({ v, codigo, dispositivo, contexto, alEnviar }: { v: Vis
       <Pantalla>
         <Cabecera titulo={titulo} contexto={contexto} />
         <section className="tarjeta flex flex-col items-center gap-4 py-10 text-center">
-          <Baldo estado="espera" className="size-24 sm:size-24" />
+          <Baldo estado="espera" className="size-[130px]" />
           <p className="font-display text-[26px] font-bold">Enviado, espera a la profesora</p>
         </section>
       </Pantalla>

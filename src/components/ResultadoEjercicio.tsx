@@ -16,7 +16,7 @@ export function ResultadoEjercicio({ compas: c, numCompases, ppm, correccion, on
   return (
     <div className="space-y-3" aria-live="polite">
       <div className="flex items-center gap-3">
-        <Baldo estado={correccion.acierto ? "acierto" : "fallo"} className="size-14 sm:size-14" />
+        <Baldo estado={correccion.acierto ? "acierto" : "fallo"} className="size-[80px]" />
         <button type="button" onClick={() => setVer(!ver)} className="text-sm font-medium text-primary underline underline-offset-2">
           {ver ? "Ocultar solución" : "Ver solución"}
         </button>

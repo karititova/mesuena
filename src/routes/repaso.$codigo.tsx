@@ -43,7 +43,7 @@ function Repaso() {
       <Pantalla>
         <Cabecera titulo="Tu repaso" volver={volver} />
         <section className="tarjeta flex flex-col items-center gap-4 py-8 text-center">
-          <Baldo estado="espera" className="size-24 sm:size-24" />
+          <Baldo estado="espera" className="size-[130px]" />
           <p className="text-muted-foreground">
             {v.estado === "noexiste" && "No hay ninguna clase con este código."}
             {v.estado === "abierta" && "La clase sigue en marcha. El repaso estará aquí cuando termine."}
@@ -82,7 +82,7 @@ function Contenido({ v, codigo, dispositivo, volver }: { v: VistaRepaso; codigo:
     <Pantalla>
       <Cabecera titulo="Tu repaso" volver={volver} />
       <section className="flex items-center gap-4">
-        <Baldo estado={v.bien! >= Math.ceil(total * 0.8) ? "celebracion" : "neutro"} className="size-24 shrink-0 sm:size-24" />
+        <Baldo estado={v.bien! >= Math.ceil(total * 0.8) ? "celebracion" : "neutro"} className="size-[130px] shrink-0" />
         <div className="space-y-1">
           <p className="font-sans text-3xl font-bold tabular-nums">{v.bien} de {total}</p>
           <p className="text-muted-foreground">preguntas bien</p>

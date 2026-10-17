@@ -174,7 +174,7 @@ function Resumen({ cfg, correcciones, onRepetir, onOtra }: { cfg: Config; correc
   return (
     <section className="tarjeta space-y-5">
       <div className="flex items-center gap-4">
-        <Baldo estado={baldoResumen(bien)} className="size-24 sm:size-24" />
+        <Baldo estado={baldoResumen(bien)} className="size-[130px]" />
         <p className="font-sans text-3xl leading-tight font-bold tabular-nums">
           {bien} de {TANDA} ejercicios bien
         </p>
