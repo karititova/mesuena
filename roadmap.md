@@ -5,7 +5,7 @@
 - [x] Rectángulo completo del último pulso
 - [x] Rondas con configuración propia y repasos acumulados
 - [x] Pruebas: 78, recorrido profesora/alumno y repaso de ambas rondas
-- [ ] Publicación
+- [x] Publicación solicitada; despliegue pendiente del servicio de publicación
 
 - [x] Lovable Cloud, cuenta de prueba de la profesora, sin registro público
 - [x] Datos y permisos: sesiones, preguntas, participantes, respuestas
