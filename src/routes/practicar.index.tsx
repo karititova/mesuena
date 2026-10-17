@@ -52,9 +52,9 @@ function Practicar() {
           <Link key={n.nivel} to="/practicar/compas" search={{ nivel: n.nivel }} className="tarjeta-opcion">
             <div className="w-full space-y-1">
               <p className="font-display text-[26px] leading-tight font-bold">Nivel {n.nivel}</p>
-              <div className="flex flex-wrap items-center gap-x-1">
+              <div className="flex items-center">
                 {n.figuras.map(([id, c]) => (
-                  <MiniFigura key={id} id={id} compas={c} pequeña />
+                  <MiniFigura key={id} id={id} compas={c} className="min-w-0 max-w-14 flex-1" />
                 ))}
               </div>
             </div>

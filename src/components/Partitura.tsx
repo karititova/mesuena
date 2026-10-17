@@ -58,7 +58,7 @@ export function Partitura(props: {
   return <div ref={ref} role="img" aria-label={props.etiqueta} className={compacta ? "partitura-caja partitura-compacta w-full" : "partitura-caja w-full min-h-24"} />;
 }
 
-export function MiniFigura({ id, compas, desactivada, pequeña }: { id: string; compas: Compas; desactivada?: boolean; pequeña?: boolean }) {
+export function MiniFigura({ id, compas, desactivada, pequeña, className }: { id: string; compas: Compas; desactivada?: boolean; pequeña?: boolean; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     import("@/musica/partitura").then(({ dibujarMiniFigura }) => {
@@ -67,7 +67,7 @@ export function MiniFigura({ id, compas, desactivada, pequeña }: { id: string; 
       dibujarMiniFigura(ref.current, id, compas, desactivada ? c.secundario : c.tinta);
     });
   }, [id, compas, desactivada]);
-  return <div ref={ref} aria-hidden className={pequeña ? "w-14" : "w-24"} />;
+  return <div ref={ref} aria-hidden className={className ?? (pequeña ? "w-14" : "w-24")} />;
 }
 
 /** true en pantallas de menos de 600 px (móvil vertical); se actualiza al girar. */
