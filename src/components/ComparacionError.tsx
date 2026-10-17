@@ -23,11 +23,11 @@ export function ComparacionError({ compas, escrito, sonado, pulso, numCompases, 
     <div className="space-y-3">
       <div className="space-y-1">
         <p className="text-sm font-semibold text-muted-foreground">Lo escrito</p>
-        <Partitura compas={compas} ids={escrito} numCompases={numCompases} silabas={false} estados={estados} etiqueta="Lo escrito" compacta={compacta} />
+        <Partitura compas={compas} ids={escrito} numCompases={numCompases} silabas={false} estados={estados} etiqueta="Lo escrito" compacta={compacta ?? false} />
       </div>
       <div className="space-y-1">
         <p className="text-sm font-semibold text-muted-foreground">Lo que sonó</p>
-        <Partitura compas={compas} ids={sonado} numCompases={numCompases} silabas={false} estados={estados} etiqueta="Lo que sonó" compacta={compacta} />
+        <Partitura compas={compas} ids={sonado} numCompases={numCompases} silabas={false} estados={estados} etiqueta="Lo que sonó" compacta={compacta ?? false} />
       </div>
     </div>
   );
