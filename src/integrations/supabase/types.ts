@@ -14,13 +14,235 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      participantes: {
+        Row: {
+          apodo: string
+          creado: string
+          demo: boolean
+          dispositivo: string
+          id: string
+          sesion_id: string
+        }
+        Insert: {
+          apodo: string
+          creado?: string
+          demo?: boolean
+          dispositivo: string
+          id?: string
+          sesion_id: string
+        }
+        Update: {
+          apodo?: string
+          creado?: string
+          demo?: boolean
+          dispositivo?: string
+          id?: string
+          sesion_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "participantes_sesion_id_fkey"
+            columns: ["sesion_id"]
+            isOneToOne: false
+            referencedRelation: "sesiones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      preguntas: {
+        Row: {
+          correcta: number | null
+          error_pulso: number | null
+          id: string
+          opciones: Json | null
+          orden: number
+          ritmo: string[]
+          sesion_id: string
+          suena: string[] | null
+        }
+        Insert: {
+          correcta?: number | null
+          error_pulso?: number | null
+          id?: string
+          opciones?: Json | null
+          orden: number
+          ritmo: string[]
+          sesion_id: string
+          suena?: string[] | null
+        }
+        Update: {
+          correcta?: number | null
+          error_pulso?: number | null
+          id?: string
+          opciones?: Json | null
+          orden?: number
+          ritmo?: string[]
+          sesion_id?: string
+          suena?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "preguntas_sesion_id_fkey"
+            columns: ["sesion_id"]
+            isOneToOne: false
+            referencedRelation: "sesiones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      respuestas: {
+        Row: {
+          acierto: boolean
+          aciertos: boolean[]
+          creada: string
+          entrada: Json
+          equivalencias: Json
+          id: string
+          participante_id: string
+          pregunta_id: string
+          respuesta: string[]
+          sesion_id: string
+          tiempo_ms: number | null
+        }
+        Insert: {
+          acierto: boolean
+          aciertos: boolean[]
+          creada?: string
+          entrada: Json
+          equivalencias?: Json
+          id?: string
+          participante_id: string
+          pregunta_id: string
+          respuesta: string[]
+          sesion_id: string
+          tiempo_ms?: number | null
+        }
+        Update: {
+          acierto?: boolean
+          aciertos?: boolean[]
+          creada?: string
+          entrada?: Json
+          equivalencias?: Json
+          id?: string
+          participante_id?: string
+          pregunta_id?: string
+          respuesta?: string[]
+          sesion_id?: string
+          tiempo_ms?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "respuestas_participante_id_fkey"
+            columns: ["participante_id"]
+            isOneToOne: false
+            referencedRelation: "participantes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "respuestas_pregunta_id_fkey"
+            columns: ["pregunta_id"]
+            isOneToOne: false
+            referencedRelation: "preguntas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "respuestas_sesion_id_fkey"
+            columns: ["sesion_id"]
+            isOneToOne: false
+            referencedRelation: "sesiones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      salas: {
+        Row: {
+          actualizada: string
+          estado: string
+          participantes: number
+          pregunta_actual: number
+          respuestas: number
+          sesion_id: string
+        }
+        Insert: {
+          actualizada?: string
+          estado: string
+          participantes?: number
+          pregunta_actual: number
+          respuestas?: number
+          sesion_id: string
+        }
+        Update: {
+          actualizada?: string
+          estado?: string
+          participantes?: number
+          pregunta_actual?: number
+          respuestas?: number
+          sesion_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salas_sesion_id_fkey"
+            columns: ["sesion_id"]
+            isOneToOne: true
+            referencedRelation: "sesiones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sesiones: {
+        Row: {
+          codigo: string
+          compas: string
+          creada: string
+          ejercicio: string
+          estado: string
+          figuras: string[]
+          id: string
+          nivel: number
+          num_compases: number
+          num_preguntas: number
+          ppm: number
+          pregunta_actual: number
+          profesora_id: string
+        }
+        Insert: {
+          codigo: string
+          compas: string
+          creada?: string
+          ejercicio: string
+          estado?: string
+          figuras: string[]
+          id?: string
+          nivel: number
+          num_compases?: number
+          num_preguntas: number
+          ppm: number
+          pregunta_actual?: number
+          profesora_id: string
+        }
+        Update: {
+          codigo?: string
+          compas?: string
+          creada?: string
+          ejercicio?: string
+          estado?: string
+          figuras?: string[]
+          id?: string
+          nivel?: number
+          num_compases?: number
+          num_preguntas?: number
+          ppm?: number
+          pregunta_actual?: number
+          profesora_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      es_mi_sesion: { Args: { _sesion: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
