@@ -77,8 +77,7 @@ export function comentarioTanda(correcciones: Correccion[], cfg: Config, _pulsos
   const frases: string[] = [];
   const conf = confusionPrincipal(correcciones);
   if (conf) {
-    const clave = [conf.puesta, conf.esperada].sort().join("|");
-    frases.push(T.confusion(datos(conf.esperada), datos(conf.puesta), conf.veces, T.pistas[clave] ?? ""));
+    frases.push(T.confusion(datos(conf.esperada), datos(conf.puesta), conf.veces, T.pistas[conf.esperada] ?? ""));
   } else {
     const ids = figurasFalladas(correcciones);
     if (ids.some((id) => figura(id).pulsos > 1)) frases.push(T.largas);

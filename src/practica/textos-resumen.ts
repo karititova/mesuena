@@ -11,11 +11,14 @@ export const TEXTOS_RESUMEN = {
   confusion: (esperada: F, puesta: F, n: number, pista: string) =>
     `Has confundido ${esperada.nombre.toLowerCase()} (${esperada.silaba}) con ${puesta.nombre.toLowerCase()} (${puesta.silaba}) ${veces(n)}${pista ? `: ${pista}` : "."}`,
 
-  /** Pistas para pares conocidos (clave: ids ordenados alfabéticamente y unidos por «|»). */
+  /** Pista según la figura que iba (id de la figura esperada). */
   pistas: {
-    "corchea_dos_semis|dos_semis_corchea": "fíjate en dónde va la parte partida, al final o al principio.",
-    "corchea_negra|negra_corchea": "fíjate en qué va primero, la nota larga o la corta.",
-    "cuatro_semis|dos_corcheas": "cuenta los golpes: dos en TI TI, cuatro en TI-RI TI-RI.",
+    corchea_dos_semis: "la parte partida va al final.",
+    dos_semis_corchea: "la parte partida va al principio.",
+    negra_corchea: "la nota larga va primero.",
+    corchea_negra: "la nota corta va primero.",
+    cuatro_semis: "son cuatro golpes, no dos.",
+    dos_corcheas: "son dos golpes, no cuatro.",
   } as Record<string, string>,
 
   /** Sin par claro y con figuras largas entre los fallos. */
