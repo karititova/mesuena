@@ -75,6 +75,8 @@ async function esperarActivo(T: ToneT, ms = 600) {
 export async function iniciarAudio(): Promise<{ audioSession: boolean }> {
   if (!Tone) Tone = await import("tone");
   const T = Tone;
+  // lookAhead mayor en móvil: el primer golpe no sale cortado tras cargar.
+  T.getContext().lookAhead = 0.2;
   const nav = navigator as Navigator & { audioSession?: { type: string } };
   let audioSession = false;
   if (nav.audioSession) {
@@ -102,7 +104,15 @@ export async function iniciarAudio(): Promise<{ audioSession: boolean }> {
     nuevo = true;
     await esperarActivo(T);
   }
-  if (!ritmoSynth || nuevo) crearSintes(T);
+  if (!ritmoSynth || nuevo) {
+    crearSintes(T);
+    // «Calienta» el sintetizador con una nota silenciosa antes del primer clic.
+    try {
+      ritmoSynth!.triggerAttackRelease(RITMO_VOZ.nota, 0.02, T.now(), 0);
+    } catch {
+      /* sin gesto aún */
+    }
+  }
   return { audioSession };
 }
 
@@ -200,5 +210,5 @@ export async function reproducir(
       alTerminar?.();
     }, time);
   }, fin + 0.3);
-  transport.start("+0.1");
+  transport.start("+0.2");
 }
