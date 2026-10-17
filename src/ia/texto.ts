@@ -78,7 +78,7 @@ ${figs}`;
 /** Valida la propuesta de la IA contra los valores de la app. Null si algo no vale. */
 export function validarCfg(raw: unknown, min: number, max: number): CfgClase | null {
   if (!raw || typeof raw !== "object") return null;
-  const r = raw as Record<string, unknown>;
+  const r = raw as { entendido?: unknown; compas?: unknown; nivel?: unknown; ejercicio?: unknown; ppm?: unknown; preguntas?: unknown; figuras?: unknown };
   if (r.entendido !== true) return null;
   if (typeof r.compas !== "string" || !COMPASES.some((c) => c.id === r.compas)) return null;
   if (r.nivel !== 1 && r.nivel !== 2) return null;
