@@ -5,52 +5,40 @@ import type { Compas } from "@/musica/compases";
 import { figura } from "@/musica/figuras";
 import type { Correccion } from "@/practica/ejercicios";
 
-/** Corrección común a los tres ejercicios: Baldo, «X de N pulsos», solución alineada y «Siguiente». */
+/** Resultado integrado bajo la respuesta: Baldo, «X de N pulsos», «Ver solución» y «Siguiente». */
 export function ResultadoEjercicio({ compas: c, numCompases, correccion, onSiguiente, ultimo }: { compas: Compas; numCompases: number; correccion: Correccion; onSiguiente: () => void; ultimo: boolean }) {
   const [ver, setVer] = useState(false);
   const bien = correccion.aciertos.filter(Boolean).length;
   const total = correccion.aciertos.length;
-  const estadosResp = correccion.aciertos.map((ok) => (ok ? ("ok" as const) : ("fallo" as const)));
   const estadosSol = correccion.aciertos.map((ok) => (ok ? null : ("fallo" as const)));
   const equivalencias = correccion.equivalencias.map((e, i) => ({ e, i })).filter((x) => x.e);
 
   return (
-    <section className="tarjeta space-y-4" aria-live="polite">
-      <div className="flex items-center gap-4">
-        <Baldo estado={correccion.acierto ? "acierto" : "fallo"} className="size-[72px] sm:size-[72px]" />
+    <div className="space-y-3" aria-live="polite">
+      <div className="flex items-center gap-3">
+        <Baldo estado={correccion.acierto ? "acierto" : "fallo"} className="size-14 sm:size-14" />
         <div>
-          <p className="font-sans text-4xl font-bold tabular-nums">
-            {bien} de {total}
+          <p className="font-sans text-3xl leading-none font-bold tabular-nums">
+            {bien} de {total} pulsos
           </p>
-          <p className="text-sm text-muted-foreground">pulsos</p>
+          <button type="button" onClick={() => setVer(!ver)} className="mt-1 text-sm font-medium text-primary underline underline-offset-2">
+            {ver ? "Ocultar solución" : "Ver solución"}
+          </button>
         </div>
       </div>
       {equivalencias.length > 0 && (
         <ul className="space-y-1.5">
           {equivalencias.map(({ e, i }) => (
             <li key={i} className="pulso pulso-ok">
-              <span className="font-semibold">Pulso {i + 1}</span>
               <span>Suena igual: aquí iba {figura(e!).nombre.toLowerCase()}</span>
             </li>
           ))}
         </ul>
       )}
-      {ver && (
-        <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Tu respuesta</p>
-          <Partitura compas={c} ids={correccion.respuesta} numCompases={numCompases} silabas={false} estados={estadosResp} etiqueta="Tu respuesta corregida" />
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Solución</p>
-          <Partitura compas={c} ids={correccion.solucion} numCompases={numCompases} silabas estados={estadosSol} etiqueta="Solución" />
-        </div>
-      )}
-      <div className="grid grid-cols-2 gap-3">
-        <button type="button" onClick={() => setVer(!ver)} className="boton boton-secundario">
-          {ver ? "Ocultar solución" : "Ver solución"}
-        </button>
-        <button type="button" onClick={onSiguiente} className="boton boton-primario">
-          {ultimo ? "Ver resumen" : "Siguiente"}
-        </button>
-      </div>
-    </section>
+      {ver && <Partitura compas={c} ids={correccion.solucion} numCompases={numCompases} silabas estados={estadosSol} etiqueta="Solución" />}
+      <button type="button" onClick={onSiguiente} className="boton boton-primario w-full">
+        {ultimo ? "Ver resumen" : "Siguiente"}
+      </button>
+    </div>
   );
 }

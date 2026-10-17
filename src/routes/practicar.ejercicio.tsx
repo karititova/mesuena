@@ -29,7 +29,7 @@ function ElegirEjercicio() {
   const [n, setN] = useState<number>(s.n ?? 2);
   return (
     <Pantalla>
-      <Cabecera titulo="Elige ejercicio" contexto={`Nivel ${nivel} · ${compas} · Paso 4 de 4`} volver={<Link to="/practicar/figuras" search={{ nivel, compas }}>← Figuras</Link>} />
+      <Cabecera titulo="¿Qué ejercicio?" contexto={`Nivel ${nivel} · ${compas} · Paso 4 de 4`} volver={<Link to="/practicar/figuras" search={{ nivel, compas }}>← Figuras</Link>} />
       <div className="space-y-3">
         {EJERCICIOS.map((e) => (
           <button key={e.id} type="button" aria-pressed={ejercicio === e.id} onClick={() => setEjercicio(e.id)} className="tarjeta-opcion">

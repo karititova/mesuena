@@ -14,6 +14,8 @@ interface Props {
   compas: Compas;
   correccion: Correccion | null;
   onCorregir: (c: Correccion) => void;
+  /** Resultado que se integra al final del bloque, bajo la respuesta. */
+  resultado?: ReactNode;
 }
 
 const estadosDe = (c: Correccion | null) => c?.aciertos.map((ok) => (ok ? ("ok" as const) : ("fallo" as const)));
@@ -38,7 +40,7 @@ function ZonaPulsos({ c, pulso, children }: { c: Compas; pulso: number | null; c
   return pulso !== null && pulso < 0 ? <div className="flex h-12 items-center justify-center"><Contador c={c} pulso={pulso} /></div> : <>{children}</>;
 }
 
-function CualSuena({ ej, cfg, compas: c, correccion, onCorregir }: Props) {
+function CualSuena({ ej, cfg, compas: c, correccion, onCorregir, resultado }: Props) {
   const r = useReproductor(c, cfg.ppm, cfg.numCompases);
   const [silabas, setSilabas] = useState(false);
   const [elegida, setElegida] = useState<number | null>(null);
@@ -121,11 +123,12 @@ function CualSuena({ ej, cfg, compas: c, correccion, onCorregir }: Props) {
         )}
         <BotonPulso activo={r.conPulso} onChange={r.setConPulso} />
       </div>
+      {resultado}
     </section>
   );
 }
 
-function Dictado({ ej, cfg, compas: c, correccion, onCorregir }: Props) {
+function Dictado({ ej, cfg, compas: c, correccion, onCorregir, resultado }: Props) {
   const r = useReproductor(c, cfg.ppm, cfg.numCompases);
   const [respuesta, setRespuesta] = useState<string[]>([]);
   const total = c.pulsos * cfg.numCompases;
@@ -198,11 +201,12 @@ function Dictado({ ej, cfg, compas: c, correccion, onCorregir }: Props) {
           </div>
         </>
       )}
+      {resultado}
     </section>
   );
 }
 
-function EncuentraError({ ej, cfg, compas: c, correccion, onCorregir }: Props) {
+function EncuentraError({ ej, cfg, compas: c, correccion, onCorregir, resultado }: Props) {
   const r = useReproductor(c, cfg.ppm, cfg.numCompases);
   const [silabas, setSilabas] = useState(false);
   const [tocado, setTocado] = useState<number | null>(null);
@@ -246,6 +250,7 @@ function EncuentraError({ ej, cfg, compas: c, correccion, onCorregir }: Props) {
           Comprobar
         </button>
       )}
+      {resultado}
     </section>
   );
 }

@@ -24,7 +24,6 @@ export function Baldo({ estado = "neutro", className }: { estado?: EstadoBaldo; 
       role="img"
       aria-label={`Baldo, ${estado}`}
     >
-      <div className="baldo-halo absolute -inset-[15%] rounded-full" aria-hidden />
       {(Object.keys(IMAGENES) as EstadoBaldo[]).map((e) => (
         <img
           key={e}

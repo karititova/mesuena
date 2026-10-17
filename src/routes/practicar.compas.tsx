@@ -39,7 +39,7 @@ function ElegirCompas() {
   );
   return (
     <Pantalla>
-      <Cabecera titulo="Elige compás" contexto={`Nivel ${nivel} · Paso 2 de 4`} volver={<Link to="/practicar">← Nivel</Link>} />
+      <Cabecera titulo="¿Qué compás?" contexto={`Nivel ${nivel} · Paso 2 de 4`} volver={<Link to="/practicar">← Nivel</Link>} />
       {grupo("simple", "Simples: el pulso se divide en dos.")}
       {grupo("compuesto", "Compuestos: el pulso se divide en tres.")}
     </Pantalla>

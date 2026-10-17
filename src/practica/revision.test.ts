@@ -27,7 +27,7 @@ describe("comentario del resumen", () => {
   it("detecta el par de figuras confundidas", () => {
     const c = [dict(["corchea_dos_semis", "negra"], ["dos_semis_corchea", "negra"]), dict(["negra", "corchea_dos_semis"], ["negra", "dos_semis_corchea"])];
     expect(confusionPrincipal(c)).toEqual({ puesta: "corchea_dos_semis", esperada: "dos_semis_corchea", veces: 2 });
-    expect(comentarioTanda(c, cfg, 2)[0]).toContain("la parte partida va al final");
+    expect(comentarioTanda(c, cfg, 2)[0]).toBe("Has confundido dos semicorcheas y corchea (TI-RI TI) con corchea y dos semicorcheas (TI TI-RI) dos veces: la parte partida va al principio.");
   });
   it("un solo fallo de un par no basta", () => {
     expect(confusionPrincipal([dict(["corchea_dos_semis", "negra"], ["dos_semis_corchea", "negra"])])).toBeNull();
@@ -40,12 +40,16 @@ describe("comentario del resumen", () => {
     const c = [dict(["negra", "silencio_negra"], ["blanca"])];
     expect(comentarioTanda(c, { ...cfg, figuras: ["negra", "blanca", "silencio_negra"] }, 2)).toContain(TEXTOS_RESUMEN.equivalencia);
   });
-  it("todo bien: frase breve y subir tempo", () => {
+  it("todo bien en nivel 1: una sola frase", () => {
     const c = [dict(["negra", "negra"], ["negra", "negra"])];
-    expect(comentarioTanda(c, cfg, 2)).toEqual([TEXTOS_RESUMEN.todoBien, TEXTOS_RESUMEN.sugerenciaTempo]);
+    expect(comentarioTanda(c, { ...cfg, nivel: 1 }, 2)).toEqual(["Todo correcto. Sube el tempo o prueba el nivel 2."]);
   });
-  it("todo bien al tempo más rápido en nivel 1: subir de nivel", () => {
-    const c = [dict(["negra", "negra"], ["negra", "negra"])];
-    expect(comentarioTanda(c, { ...cfg, nivel: 1, ppm: 70 }, 2)).toEqual([TEXTOS_RESUMEN.todoBien, TEXTOS_RESUMEN.sugerenciaNivel]);
+  it("sin par claro y con figuras largas", () => {
+    const c = [dict(["negra", "negra"], ["blanca"])];
+    expect(comentarioTanda(c, { ...cfg, figuras: ["negra", "blanca"] }, 2)[0]).toBe(TEXTOS_RESUMEN.largas);
+  });
+  it("nunca nombra números de pulso", () => {
+    const c = [dict(["negra", "dos_corcheas"], ["negra", "negra"]), dict(["dos_corcheas", "negra"], ["negra", "negra"])];
+    expect(comentarioTanda(c, cfg, 2).join(" ")).not.toMatch(/pulso \d/i);
   });
 });
