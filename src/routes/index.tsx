@@ -33,7 +33,7 @@ function Index() {
           </div>
           <span className="ml-auto text-2xl text-muted-foreground" aria-hidden>→</span>
         </Link>
-        <Link to="/clase" className="tarjeta-opcion min-h-28">
+        <Link to="/unirse" className="tarjeta-opcion min-h-28">
           <div>
             <p className="font-display text-[26px] font-bold">Entrar a una clase</p>
             <p className="text-sm text-muted-foreground">Con el código de la clase.</p>
@@ -41,6 +41,9 @@ function Index() {
           <span className="ml-auto text-2xl text-muted-foreground" aria-hidden>→</span>
         </Link>
       </div>
+      <footer className="pt-8 text-center">
+        <Link to="/profe" className="text-sm text-muted-foreground underline-offset-2 hover:underline">Soy la profesora</Link>
+      </footer>
     </Pantalla>
   );
 }
