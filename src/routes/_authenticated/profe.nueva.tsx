@@ -9,6 +9,8 @@ import { COMPASES, compas as getCompas, TEMPOS } from "@/musica/compases";
 import { figurasDisponibles, type Nivel } from "@/musica/figuras";
 import { EJERCICIOS, seleccionValida, type TipoEjercicio } from "@/practica/ejercicios";
 import { crearSesion } from "@/clase/profe.functions";
+import { leerBusqueda, listaFiguras } from "@/practica/busqueda";
+import { interpretarClase } from "@/ia/ia.functions";
 import { PREGUNTAS_DEFECTO, PREGUNTAS_MAX, PREGUNTAS_MIN } from "@/clase/sala";
 
 export const Route = createFileRoute("/_authenticated/profe/nueva")({
@@ -22,20 +24,27 @@ export const Route = createFileRoute("/_authenticated/profe/nueva")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
+  validateSearch: leerBusqueda,
   component: NuevaClase,
 });
 
 function NuevaClase() {
   const navigate = useNavigate();
   const crear = useServerFn(crearSesion);
-  const [nivel, setNivel] = useState<Nivel>(1);
-  const [compas, setCompas] = useState("2/4");
+  const interpretar = useServerFn(interpretarClase);
+  const b = Route.useSearch();
+  const [nivel, setNivel] = useState<Nivel>(b.nivel ?? 1);
+  const [compas, setCompas] = useState(b.compas ?? "2/4");
   const c = getCompas(compas);
   const todas = figurasDisponibles(c.tipo, nivel);
-  const [marcadas, setMarcadas] = useState<string[]>(todas.map((f) => f.id));
-  const [ejercicio, setEjercicio] = useState<TipoEjercicio>("dictado");
-  const [ppm, setPpm] = useState<50 | 60 | 70>(60);
-  const [n, setN] = useState<1 | 2>(2);
+  const previas = listaFiguras(b.figuras).filter((id) => todas.some((f) => f.id === id));
+  const [marcadas, setMarcadas] = useState<string[]>(previas.length ? previas : todas.map((f) => f.id));
+  const [ejercicio, setEjercicio] = useState<TipoEjercicio>(b.ejercicio ?? "dictado");
+  const [ppm, setPpm] = useState<50 | 60 | 70>((b.ppm as 50 | 60 | 70) ?? 60);
+  const [n, setN] = useState<1 | 2>((b.n as 1 | 2) ?? 2);
+  const [descripcion, setDescripcion] = useState("");
+  const [leyendo, setLeyendo] = useState(false);
+  const [aviso, setAviso] = useState<string | null>(null);
   const [preguntas, setPreguntas] = useState(PREGUNTAS_DEFECTO);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -60,9 +69,29 @@ function NuevaClase() {
     }
   };
 
+  const rellenar = async () => {
+    setLeyendo(true);
+    setAviso(null);
+    const r = await interpretar({ data: { texto: descripcion } }).catch(() => ({ cfg: null }));
+    setLeyendo(false);
+    if (!r.cfg) return setAviso("No lo he entendido; elige las opciones a mano");
+    setNivel(r.cfg.nivel);
+    setCompas(r.cfg.compas);
+    setMarcadas(r.cfg.figuras);
+    setEjercicio(r.cfg.ejercicio);
+    setPpm(r.cfg.ppm);
+    setPreguntas(r.cfg.numPreguntas);
+  };
+
   return (
     <Pantalla>
       <Cabecera titulo="Nueva clase" volver={<Link to="/profe/clases">← Mis clases</Link>} />
+      <div className="tarjeta space-y-3">
+        <label htmlFor="describe" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Describe la clase (opcional)</label>
+        <textarea id="describe" value={descripcion} onChange={(e) => setDescripcion(e.target.value)} rows={2} maxLength={400} placeholder="Compás compuesto, nivel 2, solo negra con puntillo y tres corcheas, 6 preguntas lentas" className="w-full rounded-xl border border-border bg-background p-3 text-base" />
+        <button type="button" disabled={descripcion.trim().length < 3 || leyendo} onClick={rellenar} className="boton boton-secundario px-5">{leyendo ? "Leyendo…" : "Rellenar"}</button>
+        {aviso && <p className="text-sm text-muted-foreground">{aviso}</p>}
+      </div>
       <div className="tarjeta space-y-5">
         <Segmentado etiqueta="Nivel" opciones={[{ valor: 1 as Nivel, texto: "Nivel 1" }, { valor: 2 as Nivel, texto: "Nivel 2" }]} valor={nivel} onChange={(v) => cambiar(v, compas)} />
         <Segmentado etiqueta="Compás" opciones={COMPASES.map((x) => ({ valor: x.id, texto: x.id }))} valor={compas} onChange={(v) => cambiar(nivel, v)} />

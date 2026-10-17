@@ -19,3 +19,4 @@
 - Live-class logic (questions, grading of student input, aggregates, demo students) lives in `src/clase/` as pure modules reusing `src/practica/`; routes only render.
 - Students have no account: every student read/write goes through server functions in `src/clase/alumno.functions.ts` that check room code + device id; students never get direct table access or other students' answers.
 - Realtime uses only the public `salas` table (state + counters, no personal data); clients refetch through server functions when it changes.
+- AI (Lovable AI Gateway) only writes text; correctness and figure suggestions come from the engine (src/clase/repaso.ts). Every AI text is cached in the explicaciones table, and calls are cut at 8 s and fail silently — saves credits and keeps screens working.

@@ -86,7 +86,7 @@ function ClaseAlumno() {
           <Baldo estado={v.misAciertos! >= Math.ceil(v.total! * 0.8) ? "celebracion" : "neutro"} className="size-24 sm:size-24" />
           <p className="font-sans text-5xl font-bold tabular-nums">{v.misAciertos} de {v.total}</p>
           <p className="text-muted-foreground">preguntas bien</p>
-          <Link to="/repaso" className="boton boton-primario w-full">Tu repaso</Link>
+          <Link to="/repaso/$codigo" params={{ codigo }} className="boton boton-primario w-full">Tu repaso</Link>
         </section>
       </Pantalla>
     );
