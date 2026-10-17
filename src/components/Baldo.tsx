@@ -31,7 +31,7 @@ export function Baldo({ estado = "neutro", className }: { estado?: EstadoBaldo; 
           alt=""
           aria-hidden
           className={cn(
-            "absolute inset-0 size-full object-contain mix-blend-multiply transition-opacity duration-300 ease-out",
+            "absolute inset-0 size-full object-contain transition-opacity duration-300 ease-out",
             e === estado ? "opacity-100" : "opacity-0",
           )}
         />
