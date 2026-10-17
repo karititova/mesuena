@@ -1,10 +1,11 @@
 # Roadmap — Ajustes y publicación
 
-- [ ] Audio: octava, ruido agudo y compresión
-- [ ] Borrado seguro de clases y clases demo
-- [ ] Rectángulo completo del último pulso
-- [ ] Rondas con configuración propia y repasos acumulados
-- [ ] Pruebas de los recorridos y publicación
+- [x] Audio: octava, ruido agudo y compresión (audibilidad a dos metros pendiente de iPhone real)
+- [x] Borrado seguro de clases y clases demo
+- [x] Rectángulo completo del último pulso
+- [x] Rondas con configuración propia y repasos acumulados
+- [x] Pruebas: 78, recorrido profesora/alumno y repaso de ambas rondas
+- [ ] Publicación
 
 - [x] Lovable Cloud, cuenta de prueba de la profesora, sin registro público
 - [x] Datos y permisos: sesiones, preguntas, participantes, respuestas
