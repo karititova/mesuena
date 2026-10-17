@@ -20,11 +20,13 @@ export function Partitura(props: {
   /** Respuesta compacta (máx. 110 px de alto). */
   compacta?: boolean;
   seleccionado?: number | null;
+  /** Pulso que suena ahora: se resalta con el mismo rectángulo que la selección. */
+  marca?: number | null;
   /** Con esta función cada pulso es una zona táctil (alto del pentagrama × ancho del pulso). */
   onTocarPulso?: ((pulso: number) => void) | undefined;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const { compas, ids, numCompases, silabas, estados, pulsoActivo, progreso, seleccionado, compacta } = props;
+  const { compas, ids, numCompases, silabas, estados, pulsoActivo, progreso, seleccionado, compacta, marca } = props;
   const tocar = useRef(props.onTocarPulso);
   tocar.current = props.onTocarPulso;
   const tactil = !!props.onTocarPulso;
@@ -36,7 +38,7 @@ export function Partitura(props: {
     import("@/musica/partitura").then(({ dibujarPartitura }) => {
       if (!vivo || turno !== dibujos.current || !ref.current) return;
       try {
-        const zonas = dibujarPartitura(ref.current, { compas, ids, numCompases, silabas, estados, filas: filas && !compacta, pulsoActivo, progreso, seleccionado, colores: leerColores() });
+        const zonas = dibujarPartitura(ref.current, { compas, ids, numCompases, silabas, estados, filas: filas && !compacta, pulsoActivo, progreso, seleccionado: marca ?? seleccionado, colores: leerColores() });
         const svg = ref.current.querySelector("svg");
         if (tactil && svg) {
           for (const z of zonas) {
@@ -54,7 +56,7 @@ export function Partitura(props: {
     return () => {
       vivo = false;
     };
-  }, [compas, ids, numCompases, silabas, estados, filas, pulsoActivo, progreso, seleccionado, compacta, tactil]);
+  }, [compas, ids, numCompases, silabas, estados, filas, pulsoActivo, progreso, seleccionado, marca, compacta, tactil]);
   return <div ref={ref} role="img" aria-label={props.etiqueta} className={compacta ? "partitura-caja partitura-compacta w-full" : "partitura-caja w-full min-h-24"} />;
 }
 

@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { Marcadores } from "@/components/Marcadores";
 import { Paleta } from "@/components/Paleta";
 import { Partitura } from "@/components/Partitura";
-import { BotonPulso, Contador, useReproductor } from "@/components/Reproduccion";
+import { Contador, useReproductor } from "@/components/Reproduccion";
 import type { Compas } from "@/musica/compases";
 import { figura } from "@/musica/figuras";
 import { corregirCual, corregirDictado, corregirError, type Config, type Correccion, type Ejercicio } from "@/practica/ejercicios";
@@ -53,7 +53,7 @@ function CualSuena({ ej, cfg, compas: c, correccion, onCorregir, resultado, acci
         <h2 className="font-display text-[24px] leading-none font-semibold">¿Cuál suena así?</h2>
         <InterruptorSilabas valor={silabas} onChange={setSilabas} />
       </div>
-      <Partitura compas={c} ids={ej.ritmo} numCompases={cfg.numCompases} silabas={silabas} estados={estadosDe(correccion)} etiqueta="Partitura" />
+      <Partitura compas={c} ids={ej.ritmo} numCompases={cfg.numCompases} silabas={silabas} estados={estadosDe(correccion)} marca={r.marca} etiqueta="Partitura" />
       <div className="min-h-10"><Contador c={c} pulso={r.sonando ? r.pulso : null} /></div>
       <div className="space-y-2" role="radiogroup" aria-label="Opciones">
         {ej.opciones!.map((ids, i) => {
@@ -107,7 +107,7 @@ function CualSuena({ ej, cfg, compas: c, correccion, onCorregir, resultado, acci
           );
         })}
       </div>
-      <div className="grid grid-cols-[1fr_auto] gap-2">
+      <div>
         {!revelado ? (
           <button
             type="button"
@@ -116,14 +116,11 @@ function CualSuena({ ej, cfg, compas: c, correccion, onCorregir, resultado, acci
               r.detener();
               onCorregir(corregirCual(elegida!, ej));
             }}
-            className="boton boton-primario"
+            className="boton boton-primario w-full"
           >
             {accion}
           </button>
-        ) : (
-          <span />
-        )}
-        <BotonPulso activo={r.conPulso} onChange={r.setConPulso} />
+        ) : null}
       </div>
       {resultado}
     </section>
@@ -150,7 +147,6 @@ function Dictado({ ej, cfg, compas: c, correccion, onCorregir, resultado, accion
         >
           {r.sonando === "ritmo" ? "■ Parar" : "▶ Escuchar"}
         </button>
-        <BotonPulso activo={r.conPulso} onChange={r.setConPulso} />
       </div>
       <div className="space-y-1">
         <div className="flex items-center justify-between text-sm">
@@ -168,6 +164,7 @@ function Dictado({ ej, cfg, compas: c, correccion, onCorregir, resultado, accion
           compacta
           estados={estadosDe(correccion)}
           progreso={r.progreso("resp")}
+          marca={r.sonando === "resp" ? r.marca : null}
           etiqueta="Partitura de tu respuesta"
         />
       </div>
@@ -229,6 +226,7 @@ function EncuentraError({ ej, cfg, compas: c, correccion, onCorregir, resultado,
         silabas={silabas}
         estados={estados}
         seleccionado={correccion ? null : tocado}
+        marca={r.marca}
         onTocarPulso={correccion ? undefined : setTocado}
         etiqueta="Partitura escrita"
       />
@@ -237,7 +235,6 @@ function EncuentraError({ ej, cfg, compas: c, correccion, onCorregir, resultado,
         <button type="button" onClick={() => (r.sonando ? r.detener() : r.tocar("suena", ej.suena!))} className="boton boton-secundario flex-1 text-lg">
           {r.sonando ? "■ Parar" : "▶ Escuchar"}
         </button>
-        <BotonPulso activo={r.conPulso} onChange={r.setConPulso} />
       </div>
       {!correccion && (
         <button

@@ -5,7 +5,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useRef, useState } from "react";
 import { Baldo } from "@/components/Baldo";
 import { Partitura } from "@/components/Partitura";
-import { BotonPulso, Contador, useReproductor } from "@/components/Reproduccion";
+import { Contador, useReproductor } from "@/components/Reproduccion";
 import { compas as getCompas, type Compas } from "@/musica/compases";
 import { expandirPulsos } from "@/musica/comprobador";
 import { figura } from "@/musica/figuras";
@@ -110,14 +110,12 @@ function Espera({ d, onEmpezar, ocupado }: { d: Datos; onEmpezar: () => void; oc
   );
 }
 
-function Reproducir({ c, ppm, n, ids }: { c: Compas; ppm: number; n: number; ids: string[] }) {
-  const r = useReproductor(c, ppm, n);
+function Reproducir({ r, c, ids }: { r: ReturnType<typeof useReproductor>; c: Compas; ids: string[] }) {
   return (
     <div className="flex items-center gap-3">
       <button type="button" onClick={() => (r.sonando ? r.detener() : r.tocar("x", ids))} className="boton boton-secundario px-6 text-lg">
         {r.sonando ? "■ Parar" : "▶ Reproducir aquí"}
       </button>
-      <BotonPulso activo={r.conPulso} onChange={r.setConPulso} />
       <Contador c={c} pulso={r.sonando ? r.pulso : null} />
     </div>
   );
@@ -129,13 +127,14 @@ function Pregunta({ d, c, onRevelar, ocupado }: { d: Datos; c: Compas; onRevelar
   const p = actualDe(d);
   const respondidas = d.respuestas.filter((r) => r.pregunta_id === p.id).length;
   const suena = p.ej.tipo === "error" ? p.ej.suena! : p.ej.ritmo;
+  const r = useReproductor(c, d.sesion.ppm, d.sesion.num_compases);
   return (
     <section className="space-y-8">
       <h1 className="font-display text-5xl font-bold">Pregunta {p.orden + 1} de {d.sesion.num_preguntas}</h1>
       {p.ej.tipo !== "dictado" && (
-        <div className="tarjeta"><Partitura compas={c} ids={p.ej.ritmo} numCompases={d.sesion.num_compases} silabas={false} etiqueta="Partitura de la pregunta" /></div>
+        <div className="tarjeta"><Partitura compas={c} ids={p.ej.ritmo} numCompases={d.sesion.num_compases} silabas={false} marca={r.marca} etiqueta="Partitura de la pregunta" /></div>
       )}
-      <Reproducir c={c} ppm={d.sesion.ppm} n={d.sesion.num_compases} ids={suena} />
+      <Reproducir r={r} c={c} ids={suena} />
       <p className="font-sans text-7xl font-bold tabular-nums">
         {respondidas} <span className="text-4xl font-semibold text-muted-foreground">de {d.participantes.length} han respondido</span>
       </p>

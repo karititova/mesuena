@@ -125,8 +125,8 @@ describe("sonido del ritmo", () => {
     expect(v[0]).toBeGreaterThan(v[1]!);
     expect(v[2]).toBe(v[0]);
   });
-  it("sin Pulso el metrónomo calla tras la entrada", () => {
-    const m = eventosDe(cc("2/4"), ["blanca"], 60, 1, false).eventos.filter((e) => e.tipo === "metro");
+  it("el metrónomo solo suena en el compás de entrada", () => {
+    const m = eventosDe(cc("2/4"), ["blanca"], 60, 1).eventos.filter((e) => e.tipo === "metro");
     expect(m.filter((e) => (e.pulso ?? 0) < 0).every((e) => e.vel > 0)).toBe(true);
     expect(m.filter((e) => (e.pulso ?? 0) >= 0).every((e) => e.vel === 0)).toBe(true);
   });
