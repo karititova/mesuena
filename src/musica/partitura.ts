@@ -71,7 +71,7 @@ let lienzo: CanvasRenderingContext2D | null | undefined;
 function medir(t: string, tam: number): number {
   if (lienzo === undefined) lienzo = typeof document !== "undefined" ? document.createElement("canvas").getContext("2d") : null;
   if (!lienzo) return t.length * tam * ANCHO_LETRA;
-  lienzo.font = `600 ${tam}px Inter, sans-serif`;
+  lienzo.font = `600 ${tam}px "Inter Tight", "Roboto Condensed", sans-serif`;
   return lienzo.measureText(t).width + 2;
 }
 
@@ -98,17 +98,17 @@ function agrupar(partes: string[], n: number, tam: number): string[] {
 /** Ajusta una sílaba al ancho de su pulso: baja hasta 11 px y, si no cabe, la parte por guiones en 2 o 3 líneas. */
 export function ajustarSilaba(texto: string, ancho: number): { tam: number; lineas: string[] } {
   const cabe = (ls: string[], tam: number) => ls.every((l) => medir(l, tam) <= ancho);
-  for (let tam = 14; tam >= 9; tam--) if (cabe([texto], tam)) return { tam, lineas: [texto] };
+  for (let tam = 13; tam >= 8; tam--) if (cabe([texto], tam)) return { tam, lineas: [texto] };
   const partes = texto.split(/[-\s]+/).filter(Boolean);
   for (let n = 2; n <= Math.min(3, partes.length); n++) {
-    for (let tam = 14; tam >= 9; tam--) {
+    for (let tam = 13; tam >= 8; tam--) {
       const ls = agrupar(partes, n, tam);
       if (cabe(ls, tam)) return { tam, lineas: ls };
     }
   }
   // Último recurso: una parte por línea y letra reducida hasta que quepa.
-  const ls = partes.length > 1 ? agrupar(partes, Math.min(3, partes.length), 9) : [texto];
-  let tam = 9;
+  const ls = partes.length > 1 ? agrupar(partes, Math.min(3, partes.length), 8) : [texto];
+  let tam = 8;
   while (tam > 7 && !cabe(ls, tam)) tam--;
   return { tam, lineas: ls };
 }
@@ -233,10 +233,10 @@ export function dibujarPartitura(div: HTMLDivElement, o: OpcionesPartitura): Zon
       }
       if (o.silabas && ini.silaba) {
         const texto = ini.silaba === "(silencio)" ? "—" : ini.silaba;
-        const { tam, lineas } = ajustarSilaba(texto, Math.max(16, x1 - x0 - 8));
+        const { tam, lineas } = ajustarSilaba(texto, Math.max(12, x1 - x0 - 6));
         ctx.save();
         ctx.setFillStyle(o.colores.secundario);
-        ctx.setFont("Inter", tam, 600);
+        ctx.setFont("Inter Tight, Roboto Condensed, sans-serif", tam, 600);
         lineas.forEach((l, j) => ctx.fillText(l, x0 - 4, 134 + y0 + j * (tam + 2)));
         ctx.restore();
       }

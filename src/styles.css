@@ -79,9 +79,9 @@
   --card-foreground: oklch(0.232 0.006 78.2);
   --popover: oklch(0.994 0.007 88.6);
   --popover-foreground: oklch(0.232 0.006 78.2);
-  --primary: oklch(0.446 0.068 211);
+  --primary: oklch(0.489 0.077 214.4);
   --primary-foreground: oklch(0.994 0.007 88.6);
-  --secondary: oklch(0.928 0.016 203);
+  --secondary: oklch(0.934 0.018 209.4);
   --secondary-foreground: oklch(0.232 0.006 78.2);
   --muted: oklch(0.908 0.025 77.5);
   --muted-foreground: oklch(0.493 0.025 69.4);
@@ -91,29 +91,29 @@
   --destructive-foreground: oklch(0.994 0.007 88.6);
   --border: oklch(0.908 0.025 77.5);
   --input: oklch(0.908 0.025 77.5);
-  --ring: oklch(0.446 0.068 211);
+  --ring: oklch(0.489 0.077 214.4);
   --verde-claro: oklch(0.932 0.028 150.4);
   --acierto: oklch(0.572 0.110 152);
-  --primario-claro: oklch(0.928 0.016 203);
+  --primario-claro: oklch(0.934 0.018 209.4);
   --acento: oklch(0.772 0.135 75);
   --acento-claro: oklch(0.930 0.050 86);
   --marron: oklch(0.475 0.072 60.1);
   --marron-claro: oklch(0.908 0.025 77.5);
   --error-claro: oklch(0.919 0.030 38.6);
   --shadow-tarjeta: 0 1px 2px oklch(0.232 0.006 78.2 / 0.06), 0 2px 8px oklch(0.232 0.006 78.2 / 0.04);
-  --chart-1: oklch(0.446 0.068 211);
+  --chart-1: oklch(0.489 0.077 214.4);
   --chart-2: oklch(0.475 0.072 60.1);
   --chart-3: oklch(0.593 0.152 33.4);
   --chart-4: oklch(0.908 0.025 77.5);
   --chart-5: oklch(0.932 0.028 150.4);
   --sidebar: oklch(0.994 0.007 88.6);
   --sidebar-foreground: oklch(0.232 0.006 78.2);
-  --sidebar-primary: oklch(0.446 0.068 211);
+  --sidebar-primary: oklch(0.489 0.077 214.4);
   --sidebar-primary-foreground: oklch(0.994 0.007 88.6);
   --sidebar-accent: oklch(0.908 0.025 77.5);
   --sidebar-accent-foreground: oklch(0.232 0.006 78.2);
   --sidebar-border: oklch(0.908 0.025 77.5);
-  --sidebar-ring: oklch(0.446 0.068 211);
+  --sidebar-ring: oklch(0.489 0.077 214.4);
 }
 
 @property --halo {
@@ -171,14 +171,10 @@
 @utility pulso-ok { background: var(--color-verde-claro); }
 @utility pulso-fallo { background: var(--color-error-claro); }
 
-.baldo { --halo: color-mix(in oklab, var(--acento-claro) 70%, transparent); transition: --halo 300ms ease; }
-.baldo[data-estado="acierto"] { --halo: var(--verde-claro); }
-.baldo[data-estado="fallo"] { --halo: var(--error-claro); }
-.baldo[data-estado="espera"] { --halo: color-mix(in oklab, var(--acento-claro) 50%, transparent); }
-.baldo[data-estado="celebracion"] { --halo: var(--acento-claro); }
-.baldo-halo {
-  background: radial-gradient(circle, var(--halo) 0%, color-mix(in oklab, var(--halo) 60%, transparent) 40%, transparent 70%);
-  filter: blur(6px);
+.fondo-mancha {
+  position: fixed; top: -18vh; right: -22vw; width: 85vmax; height: 85vmax; z-index: -1; pointer-events: none;
+  background: radial-gradient(circle, color-mix(in oklab, var(--acento-claro) 85%, transparent) 0%, color-mix(in oklab, var(--acento-claro) 35%, transparent) 35%, transparent 65%);
+  filter: blur(40px);
 }
 
 /* Móvil en horizontal: la partitura no ocupa toda la pantalla. */
