@@ -6,7 +6,7 @@ import { figura } from "@/musica/figuras";
 import type { Correccion } from "@/practica/ejercicios";
 
 /** Resultado integrado bajo la respuesta: Baldo, «X de N pulsos», «Ver solución» y «Siguiente». */
-export function ResultadoEjercicio({ compas: c, numCompases, correccion, onSiguiente, ultimo }: { compas: Compas; numCompases: number; correccion: Correccion; onSiguiente: () => void; ultimo: boolean }) {
+export function ResultadoEjercicio({ compas: c, numCompases, correccion, onSiguiente, ultimo }: { compas: Compas; numCompases: number; correccion: Correccion; onSiguiente?: () => void; ultimo?: boolean }) {
   const [ver, setVer] = useState(false);
   const bien = correccion.aciertos.filter(Boolean).length;
   const total = correccion.aciertos.length;
@@ -36,9 +36,9 @@ export function ResultadoEjercicio({ compas: c, numCompases, correccion, onSigui
         </ul>
       )}
       {ver && <Partitura compas={c} ids={correccion.solucion} numCompases={numCompases} silabas estados={estadosSol} etiqueta="Solución" />}
-      <button type="button" onClick={onSiguiente} className="boton boton-primario w-full">
+      {onSiguiente && <button type="button" onClick={onSiguiente} className="boton boton-primario w-full">
         {ultimo ? "Ver resumen" : "Siguiente"}
-      </button>
+      </button>}
     </div>
   );
 }

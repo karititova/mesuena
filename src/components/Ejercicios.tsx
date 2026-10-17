@@ -16,6 +16,8 @@ interface Props {
   onCorregir: (c: Correccion) => void;
   /** Resultado que se integra al final del bloque, bajo la respuesta. */
   resultado?: ReactNode;
+  /** Texto del botón final («Comprobar» en la práctica, «Enviar» en clase). */
+  accion?: string;
 }
 
 const estadosDe = (c: Correccion | null) => c?.aciertos.map((ok) => (ok ? ("ok" as const) : ("fallo" as const)));
@@ -40,7 +42,7 @@ function ZonaPulsos({ c, pulso, children }: { c: Compas; pulso: number | null; c
   return pulso !== null && pulso < 0 ? <div className="flex h-12 items-center justify-center"><Contador c={c} pulso={pulso} /></div> : <>{children}</>;
 }
 
-function CualSuena({ ej, cfg, compas: c, correccion, onCorregir, resultado }: Props) {
+function CualSuena({ ej, cfg, compas: c, correccion, onCorregir, resultado, accion = "Comprobar" }: Props) {
   const r = useReproductor(c, cfg.ppm, cfg.numCompases);
   const [silabas, setSilabas] = useState(false);
   const [elegida, setElegida] = useState<number | null>(null);
@@ -116,7 +118,7 @@ function CualSuena({ ej, cfg, compas: c, correccion, onCorregir, resultado }: Pr
             }}
             className="boton boton-primario"
           >
-            Comprobar
+            {accion}
           </button>
         ) : (
           <span />
@@ -128,7 +130,7 @@ function CualSuena({ ej, cfg, compas: c, correccion, onCorregir, resultado }: Pr
   );
 }
 
-function Dictado({ ej, cfg, compas: c, correccion, onCorregir, resultado }: Props) {
+function Dictado({ ej, cfg, compas: c, correccion, onCorregir, resultado, accion = "Comprobar" }: Props) {
   const r = useReproductor(c, cfg.ppm, cfg.numCompases);
   const [respuesta, setRespuesta] = useState<string[]>([]);
   const total = c.pulsos * cfg.numCompases;
@@ -196,7 +198,7 @@ function Dictado({ ej, cfg, compas: c, correccion, onCorregir, resultado }: Prop
               disabled={puestos < total}
               className="boton boton-primario min-h-11 px-1 text-sm"
             >
-              Comprobar
+              {accion}
             </button>
           </div>
         </>
@@ -206,7 +208,7 @@ function Dictado({ ej, cfg, compas: c, correccion, onCorregir, resultado }: Prop
   );
 }
 
-function EncuentraError({ ej, cfg, compas: c, correccion, onCorregir, resultado }: Props) {
+function EncuentraError({ ej, cfg, compas: c, correccion, onCorregir, resultado, accion = "Comprobar" }: Props) {
   const r = useReproductor(c, cfg.ppm, cfg.numCompases);
   const [silabas, setSilabas] = useState(false);
   const [tocado, setTocado] = useState<number | null>(null);
@@ -247,7 +249,7 @@ function EncuentraError({ ej, cfg, compas: c, correccion, onCorregir, resultado 
           }}
           className="boton boton-primario w-full"
         >
-          Comprobar
+          {accion}
         </button>
       )}
       {resultado}
