@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as ClaseRouteImport } from './routes/clase'
 import { Route as LaboratorioRouteImport } from './routes/laboratorio'
+import { Route as RepasoRouteImport } from './routes/repaso'
 import { Route as PracticarIndexRouteImport } from './routes/practicar.index'
 import { Route as PracticarCompasRouteImport } from './routes/practicar.compas'
 import { Route as PracticarEjercicioRouteImport } from './routes/practicar.ejercicio'
@@ -42,6 +43,11 @@ const ClaseRoute = ClaseRouteImport.update({
 const LaboratorioRoute = LaboratorioRouteImport.update({
   id: '/laboratorio',
   path: '/laboratorio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RepasoRoute = RepasoRouteImport.update({
+  id: '/repaso',
+  path: '/repaso',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PracticarIndexRoute = PracticarIndexRouteImport.update({
@@ -106,6 +112,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/clase': typeof ClaseRoute
   '/laboratorio': typeof LaboratorioRoute
+  '/repaso': typeof RepasoRoute
   '/practicar/compas': typeof PracticarCompasRoute
   '/practicar/ejercicio': typeof PracticarEjercicioRoute
   '/practicar/figuras': typeof PracticarFigurasRoute
@@ -122,6 +129,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/clase': typeof ClaseRoute
   '/laboratorio': typeof LaboratorioRoute
+  '/repaso': typeof RepasoRoute
   '/practicar/compas': typeof PracticarCompasRoute
   '/practicar/ejercicio': typeof PracticarEjercicioRoute
   '/practicar/figuras': typeof PracticarFigurasRoute
@@ -140,6 +148,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/clase': typeof ClaseRoute
   '/laboratorio': typeof LaboratorioRoute
+  '/repaso': typeof RepasoRoute
   '/practicar/compas': typeof PracticarCompasRoute
   '/practicar/ejercicio': typeof PracticarEjercicioRoute
   '/practicar/figuras': typeof PracticarFigurasRoute
@@ -158,6 +167,7 @@ export interface FileRouteTypes {
     | '/'
     | '/clase'
     | '/laboratorio'
+    | '/repaso'
     | '/practicar/compas'
     | '/practicar/ejercicio'
     | '/practicar/figuras'
@@ -174,6 +184,7 @@ export interface FileRouteTypes {
     | '/'
     | '/clase'
     | '/laboratorio'
+    | '/repaso'
     | '/practicar/compas'
     | '/practicar/ejercicio'
     | '/practicar/figuras'
@@ -191,6 +202,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/clase'
     | '/laboratorio'
+    | '/repaso'
     | '/practicar/compas'
     | '/practicar/ejercicio'
     | '/practicar/figuras'
@@ -209,6 +221,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   ClaseRoute: typeof ClaseRoute
   LaboratorioRoute: typeof LaboratorioRoute
+  RepasoRoute: typeof RepasoRoute
   PracticarCompasRoute: typeof PracticarCompasRoute
   PracticarEjercicioRoute: typeof PracticarEjercicioRoute
   PracticarFigurasRoute: typeof PracticarFigurasRoute
@@ -247,6 +260,13 @@ declare module '@tanstack/react-router' {
       path: '/laboratorio'
       fullPath: '/laboratorio'
       preLoaderRoute: typeof LaboratorioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/repaso': {
+      id: '/repaso'
+      path: '/repaso'
+      fullPath: '/repaso'
+      preLoaderRoute: typeof RepasoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/practicar/': {
@@ -349,6 +369,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   ClaseRoute: ClaseRoute,
   LaboratorioRoute: LaboratorioRoute,
+  RepasoRoute: RepasoRoute,
   PracticarCompasRoute: PracticarCompasRoute,
   PracticarEjercicioRoute: PracticarEjercicioRoute,
   PracticarFigurasRoute: PracticarFigurasRoute,

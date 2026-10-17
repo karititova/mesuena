@@ -21,14 +21,12 @@ export const PREGUNTAS_MAX = 10;
 export const PREGUNTAS_DEFECTO = 5;
 
 export function ejercicioDe(tipo: TipoEjercicio, p: FilaPregunta): Ejercicio {
-  return {
-    tipo,
-    ritmo: p.ritmo,
-    opciones: (p.opciones as string[][] | null) ?? undefined,
-    correcta: p.correcta ?? undefined,
-    suena: p.suena ?? undefined,
-    errorPulso: p.error_pulso ?? undefined,
-  };
+  const ej: Ejercicio = { tipo, ritmo: p.ritmo };
+  if (p.opciones) ej.opciones = p.opciones as string[][];
+  if (p.correcta !== null) ej.correcta = p.correcta;
+  if (p.suena) ej.suena = p.suena;
+  if (p.error_pulso !== null) ej.errorPulso = p.error_pulso;
+  return ej;
 }
 
 /** Lo que recibe el móvil mientras la pregunta está abierta: sin la respuesta correcta. */
