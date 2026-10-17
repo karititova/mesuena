@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Baldo } from "@/components/Baldo";
 import { Cabecera, Pantalla } from "@/components/Cabecera";
 
-export const Route = createFileRoute("/repaso")({
+export const Route = createFileRoute("/repaso/")({
   head: () => ({
     meta: [
       { title: "Tu repaso · Me suena" },
