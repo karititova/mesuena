@@ -22,7 +22,7 @@ function Index() {
       <header className="relative pb-4 pt-16">
         <div className="fondo-mancha" aria-hidden />
         <div className="relative space-y-3">
-          <Baldo estado="neutro" className="mx-auto size-24 sm:size-24" />
+          <Baldo estado="neutro" className="mx-auto size-[150px] sm:size-[190px]" />
           <h1 className="text-center font-display text-[56px] leading-none font-bold text-foreground">Me suena</h1>
           <p className="text-center text-lg text-muted-foreground">Entrena el oído rítmico, pulso a pulso.</p>
         </div>

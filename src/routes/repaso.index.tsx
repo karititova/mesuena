@@ -21,7 +21,7 @@ function Repaso() {
     <Pantalla>
       <Cabecera titulo="Tu repaso" volver={<Link to="/">← Me suena</Link>} />
       <section className="tarjeta flex flex-col items-center gap-4 py-10 text-center">
-        <Baldo estado="espera" className="size-24 sm:size-24" />
+        <Baldo estado="espera" className="size-[130px]" />
         <p className="font-display text-[28px] font-bold">Pronto</p>
         <p className="text-muted-foreground">Aquí repasarás los ritmos que fallaste en clase. Mientras, puedes practicar por tu cuenta.</p>
         <Link to="/practicar" className="boton boton-primario px-8">Practicar</Link>
