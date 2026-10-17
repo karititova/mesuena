@@ -155,7 +155,7 @@ function TandaEn({ cfg: cfgInicial }: { cfg: Config }) {
               out[indice] = x;
               return out;
             })}
-            resultado={correccion && <ResultadoEjercicio compas={c} numCompases={cfgActual.numCompases} correccion={correccion} onSiguiente={siguiente} ultimo={indice === TANDA - 1} />}
+            resultado={correccion && <ResultadoEjercicio compas={c} numCompases={cfgActual.numCompases} ppm={cfgActual.ppm} correccion={correccion} onSiguiente={siguiente} ultimo={indice === TANDA - 1} />}
           />
         </div>
       )}

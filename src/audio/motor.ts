@@ -27,28 +27,32 @@ export const RITMO_VOZ = {
   golpe: 0.05,
   pitchDecay: 0.006,
   octaves: 1.5,
-  envolvente: { attack: 0.001, decay: 0.07, sustain: 0, release: 0.02 },
-  volumen: 4,
+  envolvente: { attack: 0.001, decay: 0.12, sustain: 0, release: 0.02 },
+  volumen: 10,
 };
+
+let compresor: ToneNS.Compressor | null = null;
 
 function crearSintes(T: ToneT) {
   ritmoSynth?.dispose();
   metroSynth?.dispose();
+  compresor?.dispose();
   limitador?.dispose();
-  // Limitador al final de la cadena: +8 dB sin distorsión.
-  limitador = new T.Limiter(-1).toDestination();
+  // Compresor (sube el volumen percibido) + limitador a -0,5 dB: suena fuerte sin distorsión.
+  limitador = new T.Limiter(-0.5).toDestination();
+  compresor = new T.Compressor({ threshold: -24, ratio: 4 }).connect(limitador);
   ritmoSynth = new T.PolySynth(T.MembraneSynth, {
     pitchDecay: RITMO_VOZ.pitchDecay,
     octaves: RITMO_VOZ.octaves,
     envelope: RITMO_VOZ.envolvente,
-  }).connect(limitador);
+  }).connect(compresor!);
   ritmoSynth.volume.value = RITMO_VOZ.volumen;
   metroSynth = new T.MembraneSynth({
     pitchDecay: 0.01,
     octaves: 2,
     envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.02 },
-  }).connect(limitador);
-  metroSynth.volume.value = 0;
+  }).connect(compresor!);
+  metroSynth.volume.value = 4;
 }
 
 const estado = (T: ToneT) => T.getContext().rawContext.state as string;
@@ -71,6 +75,8 @@ async function esperarActivo(T: ToneT, ms = 600) {
 export async function iniciarAudio(): Promise<{ audioSession: boolean }> {
   if (!Tone) Tone = await import("tone");
   const T = Tone;
+  // lookAhead mayor en móvil: el primer golpe no sale cortado tras cargar.
+  T.getContext().lookAhead = 0.2;
   const nav = navigator as Navigator & { audioSession?: { type: string } };
   let audioSession = false;
   if (nav.audioSession) {
@@ -98,7 +104,15 @@ export async function iniciarAudio(): Promise<{ audioSession: boolean }> {
     nuevo = true;
     await esperarActivo(T);
   }
-  if (!ritmoSynth || nuevo) crearSintes(T);
+  if (!ritmoSynth || nuevo) {
+    crearSintes(T);
+    // «Calienta» el sintetizador con una nota silenciosa antes del primer clic.
+    try {
+      ritmoSynth!.triggerAttackRelease(RITMO_VOZ.nota, 0.02, T.now(), 0);
+    } catch {
+      /* sin gesto aún */
+    }
+  }
   return { audioSession };
 }
 
@@ -196,5 +210,5 @@ export async function reproducir(
       alTerminar?.();
     }, time);
   }, fin + 0.3);
-  transport.start("+0.1");
+  transport.start("+0.2");
 }

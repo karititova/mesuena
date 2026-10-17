@@ -156,7 +156,7 @@ function PreguntaAlumno({ v, codigo, dispositivo, contexto, alEnviar }: { v: Vis
                 estados={v.correccion.aciertos.map((ok) => (ok ? "ok" : "fallo"))}
                 etiqueta="Tu respuesta"
               />
-              <ResultadoEjercicio compas={c} numCompases={cfg.numCompases} correccion={v.correccion} />
+              <ResultadoEjercicio compas={c} numCompases={cfg.numCompases} ppm={cfg.ppm} correccion={v.correccion} />
             </>
           ) : (
             <>
