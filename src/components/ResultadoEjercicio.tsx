@@ -32,7 +32,7 @@ export function ResultadoEjercicio({ compas: c, numCompases, ppm, correccion, on
       )}
       {ver && (
         <div className="space-y-2">
-          <Partitura compas={c} ids={correccion.solucion} numCompases={numCompases} silabas estados={estadosSol} marca={r.marca} etiqueta="Solución" />
+          <Partitura compas={c} ids={correccion.solucion} numCompases={numCompases} silabas estados={estadosSol} marca={r.marca} etiqueta="Solución" compacta />
           <button type="button" onClick={() => (r.sonando ? r.detener() : r.tocar("sol", correccion.solucion))} className="boton boton-secundario px-5">
             {r.sonando ? "■ Parar" : "▶ Oír la solución"}
           </button>
